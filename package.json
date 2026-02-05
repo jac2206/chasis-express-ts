@@ -1,0 +1,26 @@
+{
+  "name": "expresstsbase",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "nodemon --exec ts-node --files src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.0",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "awilix": "^12.0.5",
+    "awilix-express": "^9.0.2",
+    "express": "^5.2.1"
+  }
+}
