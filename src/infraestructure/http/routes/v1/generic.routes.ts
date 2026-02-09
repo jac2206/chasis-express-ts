@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { container } from "../../../../config/container";
-import { GenericController } from "../../../controllers/generic.controller";
+import { GenericController } from "../../../controllers/v1/generic.controller";
 
 const router = Router();
 

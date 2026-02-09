@@ -6,7 +6,7 @@ import {
 
 import { HealthService } from "../infraestructure/service/health.service";
 import { HealthController } from "../infraestructure/controllers/health.controller";
-import { GenericController } from "../infraestructure/controllers/generic.controller";
+import { GenericController } from "../infraestructure/controllers/v1/generic.controller";
 import { GetGenericUseCase } from "../application/use-cases/generic/get-generic.usecase";
 
 export const container = createContainer({
