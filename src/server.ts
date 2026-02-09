@@ -1,7 +1,8 @@
 import express from "express";
 import { scopePerRequest } from "awilix-express";
-import { container } from "./container";
-import healthRoutes from "./routes/health.routes";
+import { container } from "./config/container";
+import v1Routes from "./infraestructure/http/routes/v1";
+import healthRouters from "./infraestructure/http/routes/health.routes";
 
 export const createServer = () => {
   const app = express();
@@ -10,7 +11,8 @@ export const createServer = () => {
 
   app.use(scopePerRequest(container));
 
-  app.use("/", healthRoutes);
+  app.use("/", healthRouters);
+  app.use("/v1", v1Routes);
 
   return app;
 };
