@@ -1,11 +1,11 @@
 export interface GenericResponseDto {
-  nombre: string;
-  apellido: string;
-  edad: number;
+  name: string;
+  lastName: string;
+  age: number;
 }
 
 export interface GenericRequestDto {
-  nombre: string;
-  apellido: string;
-  edad: number;
+  name: string;
+  lastName: string;
+  age: number;
 }

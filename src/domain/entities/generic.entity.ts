@@ -1,15 +1,15 @@
 export class Generic {
   constructor(
-    private readonly nombre: string,
-    private readonly apellido: string,
-    private readonly edad: number
+    public readonly name: string,
+    public readonly lastName: string,
+    public readonly age: number
   ) {}
 
-  toPrimitives() {
+  toPersistence() {
     return {
-      nombre: this.nombre,
-      apellido: this.apellido,
-      edad: this.edad
+      name: this.name,
+      lastName: this.lastName,
+      age: this.age
     };
   }
 }
