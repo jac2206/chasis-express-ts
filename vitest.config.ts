@@ -8,11 +8,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
+      include: ["src/**/*.ts"],
       exclude: [
+        "**/*.spec.ts",
         "**/node_modules/**",
-        "src/config/**",
-        "config/**",
-      ],
-    },
+        "src/config/**"
+      ]
+    }
   }
 });

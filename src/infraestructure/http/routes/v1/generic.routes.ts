@@ -13,4 +13,9 @@ router.post("/", (req, res) => {
   controller.postGeneric(req, res);
 });
 
+router.patch("/:id", (req, res) => {
+  const controller = container.resolve<GenericController>("genericController");
+  controller.patchGeneric(req, res);
+})
+
 export default router;
