@@ -11,10 +11,10 @@ describe("GetGenericUseCase", () => {
 
     // Assert
     expect(result).toBeDefined();
-    expect(result.toPrimitives()).toEqual({
-      nombre: "Julian",
-      apellido: "Arango",
-      edad: 30
+    expect(result.toPersistence()).toEqual({
+      name: "Julian",
+      lastName: "Arango",
+      age: 30
     });
   });
 });

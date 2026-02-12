@@ -14,5 +14,12 @@ export const createServer = () => {
   app.use("/", healthRouters);
   app.use("/v1", v1Routes);
 
+  app.use((req, res) => {
+    res.status(404).json({
+      message: "Route not found",
+      code: 404
+    });
+  });
+
   return app;
 };
