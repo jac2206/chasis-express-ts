@@ -265,8 +265,12 @@ app.use(scopePerRequest(container));
 ## Instalación
 
 ```bash
-npm install -D vitest @vitest/coverage-v8 supertest
+npm install 
 ```
+
+Paquetes
+vitest @vitest/coverage-v8 supertest
+express, tsx, nodemon
 
 ## vitest.config.ts
 
@@ -288,11 +292,16 @@ export default defineConfig({
         "**/node_modules/**",
         "src/config/**",
         "test/**/*.spec.t",
-        "**/infraestructure/controllers/**"
+        "**/infraestructure/controllers/**",
+        "**/infraestructure/http/routes/**",
+        "**/domain/interfaces/**",
+        "**/domain/entities/**",
+        "**/types/**"
       ]
     }
   }
 });
+
 
 ```
 
@@ -302,7 +311,7 @@ export default defineConfig({
 
 ```json
 "scripts": {
-  "dev": "nodemon --exec ts-node --files src/main.ts",
+  "dev": "tsx watch src/main.ts",
   "build": "tsc",
   "start": "node dist/main.js",
   "test": "vitest",

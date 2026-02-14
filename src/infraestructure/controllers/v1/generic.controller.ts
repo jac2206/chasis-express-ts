@@ -1,6 +1,6 @@
 import { GenericResponseDto, GenericRequestDto } from "../../../application/dto/get-generic.dto";
-import { IGetGenericUseCase } from "../../../application/use-cases/generic/get-generic.usecase.interfaces";
-import { ICreateGenericUseCase } from "../../../application/use-cases/generic/create-generic.usecase.interface";
+import { IGetGenericUseCase } from "../../../domain/interfaces/use-cases/get-generic.usecase.interfaces";
+import { ICreateGenericUseCase } from "../../../domain/interfaces/use-cases/create-generic.usecase.interface";
 
 export class GenericController {
   constructor(
