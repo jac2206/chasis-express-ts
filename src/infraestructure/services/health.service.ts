@@ -1,4 +1,4 @@
-import { IHealthService } from "../../domain/interfaces/service/health.service.interface";
+import { IHealthService } from "../../domain/interfaces/services/health.service.interface";
 
 export class HealthService implements IHealthService {
     constructor() {}

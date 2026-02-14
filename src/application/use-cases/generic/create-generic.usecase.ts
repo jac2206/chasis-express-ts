@@ -1,5 +1,5 @@
 import { GenericRequestDto, GenericResponseDto } from "../../dto/get-generic.dto";
-import { ICreateGenericUseCase } from "./create-generic.usecase.interface";
+import { ICreateGenericUseCase } from "../../../domain/interfaces/use-cases/create-generic.usecase.interface";
 
 export class CreateGenericUseCase implements ICreateGenericUseCase{
     constructor(){
