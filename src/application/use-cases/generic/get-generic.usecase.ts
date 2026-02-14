@@ -1,5 +1,5 @@
 import { Generic } from "../../../domain/entities/generic.entity";
-import { IGetGenericUseCase } from "./get-generic.usecase.interfaces";
+import { IGetGenericUseCase } from "../../../domain/interfaces/use-cases/get-generic.usecase.interfaces";
 
 export class GetGenericUseCase implements IGetGenericUseCase {
     constructor() {}
