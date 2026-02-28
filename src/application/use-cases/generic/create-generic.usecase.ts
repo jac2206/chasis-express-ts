@@ -1,5 +1,5 @@
 import { GenericRequestDto, GenericResponseDto } from "../../dto/get-generic.dto";
-import { ICreateGenericUseCase } from "../../../domain/interfaces/use-cases/create-generic.usecase.interface";
+import { ICreateGenericUseCase } from "../../../domain/interfaces/use-cases/generic/create-generic.usecase.interface";
 import { DomainException } from "../../../domain/exceptions/domain.exception";
 import { DomainErrors } from "../../../domain/errors/domain-errors";
 

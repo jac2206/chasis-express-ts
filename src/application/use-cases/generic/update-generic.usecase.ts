@@ -1,4 +1,4 @@
-import { IUpdateGenericUseCase } from "../../../domain/interfaces/use-cases/update-generic.usecase.interface";
+import { IUpdateGenericUseCase } from "../../../domain/interfaces/use-cases/generic/update-generic.usecase.interface";
 import { GenericRequestDto, GenericResponseDto } from "../../dto/get-generic.dto";
 import { DomainException } from "../../../domain/exceptions/domain.exception";
 import { DomainErrors } from "../../../domain/errors/domain-errors";

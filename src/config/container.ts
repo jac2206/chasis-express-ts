@@ -14,6 +14,9 @@ import { WinstonLogger } from "../infraestructure/logger/wiston.logger";
 import { JwtAuthService } from "../infraestructure/security/jwt-auth.service";
 import { GenericRepository } from "../infraestructure/database/repositories/generic.repository";
 import { GetXIdGenericUseCase } from "../application/use-cases/generic/getxid-generic.usecase";
+import { HttpClient } from "../infraestructure/http/http-client";
+import { GetPokemonXNameUseCase } from "../application/use-cases/generic/get-pokemonxname.usecase";
+import { PokeApiAdapter } from "../infraestructure/adapters/poke-api.adapter";
 
 export const container = createContainer({
   injectionMode: InjectionMode.CLASSIC
@@ -25,16 +28,20 @@ container.register({
   createGenericUseCase: asClass(CreateGenericUseCase).scoped(),
   updateGenericUseCase: asClass(UpdateGenericUseCase).scoped(),
   getXIdGenericUseCase: asClass(GetXIdGenericUseCase).scoped(),
+  getPokemonXNameUseCase: asClass(GetPokemonXNameUseCase).scoped(),
 
   // Services
   healthService: asClass(HealthService).singleton(),
   authService: asClass(JwtAuthService).singleton(),
 
+  // Adapter
+  pokeApiAdapter: asClass(PokeApiAdapter).singleton(),
+
   // Controllers
   healthController: asClass(HealthController).scoped(),
-  genericController: asClass(GenericController).scoped()
+  genericController: asClass(GenericController).scoped(),
 
-  
+  httpClient: asClass(HttpClient).singleton()
 });
 
 container.register({
