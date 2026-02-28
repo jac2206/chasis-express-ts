@@ -1,17 +1,19 @@
 import { Request, Response } from "express";
 import { GenericResponseDto, GenericRequestDto } from "../../../application/dto/get-generic.dto";
-import { IGetGenericUseCase } from "../../../domain/interfaces/use-cases/get-generic.usecase.interfaces";
-import { ICreateGenericUseCase } from "../../../domain/interfaces/use-cases/create-generic.usecase.interface";
-import { IUpdateGenericUseCase } from "../../../domain/interfaces/use-cases/update-generic.usecase.interface";
-import { IGetXIdGenericUseCase } from "../../../domain/interfaces/use-cases/getxid-generic.usecase.interface";
+import { IGetGenericUseCase } from "../../../domain/interfaces/use-cases/generic/get-generic.usecase.interfaces";
+import { ICreateGenericUseCase } from "../../../domain/interfaces/use-cases/generic/create-generic.usecase.interface";
+import { IUpdateGenericUseCase } from "../../../domain/interfaces/use-cases/generic/update-generic.usecase.interface";
+import { IGetXIdGenericUseCase } from "../../../domain/interfaces/use-cases/generic/getxid-generic.usecase.interface";
 import { UpdateGenericResponseUseCaseDto } from "../../../application/dto/update-generic.dto";
+import { IGetPokemonXNameUseCase } from "../../../domain/interfaces/use-cases/generic/get-pokemonxname.usecase.interface";
 
 export class GenericController {
   constructor(
     private readonly getGenericUseCase: IGetGenericUseCase,
     private readonly createGenericUseCase: ICreateGenericUseCase,
     private readonly updateGenericUseCase: IUpdateGenericUseCase,
-    private readonly getXIdGenericUseCase: IGetXIdGenericUseCase
+    private readonly getXIdGenericUseCase: IGetXIdGenericUseCase,
+    private readonly getPokemonXNameUseCase: IGetPokemonXNameUseCase
   ) {}
 
   // Request<Params, ResBody, ReqBody, Query>
@@ -49,6 +51,17 @@ export class GenericController {
       lastName: result?.lastName,
       age: result?.age
     } as GenericRequestDto;
+    res.status(200).json(response);
+  }
+  
+  getPokemonXName = async (
+    _req: Request<{name:string}, PokemonResponseDto>, 
+    res: Response<PokemonResponseDto>):Promise<void> => {
+    const id = _req.params.name;
+    const result = await this.getPokemonXNameUseCase.execute(id);
+    const response : PokemonResponseDto = {
+      ...result
+    }
     res.status(200).json(response);
   }
 
