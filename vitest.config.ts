@@ -15,12 +15,14 @@ export default defineConfig({
         "**/node_modules/**",
         "src/config/**",
         "test/**/*.spec.t",
-        "**/infraestructure/controllers/**",
         "**/infraestructure/http/routes/**",
         "**/application/dto/**",
         "**/domain/interfaces/**",
         "**/domain/entities/**",
-        "**/types/**"
+        "**/infraestructure/logger/**",
+        "**/types/**",
+        "src/main.ts",
+        "src/server.ts"
       ]
     }
   }

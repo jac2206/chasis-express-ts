@@ -23,6 +23,11 @@ router.get("/:id", async (req, res) => {
   return controller.getXIdGeneric(req, res);
 })
 
+router.get("/pokemon/:name", async (req, res) => {
+  const controller = container.resolve<GenericController>("genericController");
+  return controller.getPokemonXName(req, res);
+})
+
 router.patch("/:id", async (req, res) => {
   const controller = container.resolve<GenericController>("genericController");
   return controller.patchGeneric(req, res);
