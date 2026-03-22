@@ -4,16 +4,50 @@ import { container } from "./config/container";
 import v1Routes from "./infraestructure/http/routes/v1";
 import healthRouters from "./infraestructure/http/routes/health.routes";
 import { errorMiddleware } from "./infraestructure/http/middlewares/error.middleware";
+import swaggerUi from "swagger-ui-express"
+import { generateSwagger } from "./infraestructure/docs/swagger"
 
 export const createServer = () => {
+
+  const swaggerDoc = generateSwagger()
+
+  swaggerDoc.components = swaggerDoc.components || {}
+  swaggerDoc.components.securitySchemes = {
+    bearerAuth: {
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT"
+    }
+  }
+
+  swaggerDoc.security = [
+    {
+      bearerAuth: []
+    }
+  ]
+
+  const prefix = "/chasis";
+
   const app = express();
 
   app.use(express.json());
 
   app.use(scopePerRequest(container));
+  
+  app.use(
+    "/docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDoc, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true
+      },
+      customSiteTitle: "Chasis API Docs"
+    })
+  )
 
-  app.use("/", healthRouters);
-  app.use("/v1", v1Routes);
+  app.use(`${prefix}/health`, healthRouters);
+  app.use(`${prefix}/v1`, v1Routes);
 
   app.use((req, res) => {
     res.status(404).json({
