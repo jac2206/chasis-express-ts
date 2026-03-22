@@ -1,3 +1,5 @@
+import { UserErrors } from "./users/users-erros";
+
 export const DomainErrors = {
   PRODUCT_NOT_FOUND: {
     code: "PRODUCT_NOT_FOUND",
@@ -34,5 +36,6 @@ export const DomainErrors = {
     code: "EXTERNAL_SERVICE_ERROR",
     message: "Extenal API error",
     statusCode: 502
-  }
+  },
+  ...UserErrors,
 };
