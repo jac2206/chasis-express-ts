@@ -11,6 +11,7 @@ export class CreateGenericUseCase implements ICreateGenericUseCase {
       const error = DomainErrors.GENERIC_INVALID_NAME;
       throw new DomainException(error.code, error.message, error.statusCode);
     }
+
     const response = {
       name: genericRequest.name,
       lastName: genericRequest.lastName,
