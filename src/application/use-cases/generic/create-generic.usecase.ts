@@ -15,6 +15,7 @@ export class CreateGenericUseCase implements ICreateGenericUseCase {
     const response = {
       name: genericRequest.name,
       lastName: genericRequest.lastName,
+
       age: genericRequest.age,
     } as GenericResponseDto;
     return response;
