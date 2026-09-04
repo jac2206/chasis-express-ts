@@ -26,6 +26,7 @@ describe("HealthController", () => {
 
     expect(jsonMock).toHaveBeenCalledWith({
       status: "ok",
+      service: "chasis-express-ts",
     });
   });
 });
