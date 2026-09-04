@@ -1,11 +1,11 @@
-import express from 'express';
-import { scopePerRequest } from 'awilix-express';
-import { container } from './config/container';
-import v1Routes from './infraestructure/http/routes/v1';
-import healthRouters from './infraestructure/http/routes/health.routes';
-import { errorMiddleware } from './infraestructure/http/middlewares/error.middleware';
-import swaggerUi from 'swagger-ui-express';
-import { generateSwagger } from './infraestructure/docs/swagger';
+import express from "express";
+import { scopePerRequest } from "awilix-express";
+import { container } from "./config/container";
+import v1Routes from "./infraestructure/http/routes/v1";
+import healthRouters from "./infraestructure/http/routes/health.routes";
+import { errorMiddleware } from "./infraestructure/http/middlewares/error.middleware";
+import swaggerUi from "swagger-ui-express";
+import { generateSwagger } from "./infraestructure/docs/swagger";
 
 export const createServer = () => {
   const swaggerDoc = generateSwagger();
@@ -13,9 +13,9 @@ export const createServer = () => {
   swaggerDoc.components = swaggerDoc.components || {};
   swaggerDoc.components.securitySchemes = {
     bearerAuth: {
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT',
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
     },
   };
 
@@ -25,7 +25,7 @@ export const createServer = () => {
     },
   ];
 
-  const prefix = '/chasis';
+  const prefix = "/chasis";
 
   const app = express();
 
@@ -34,14 +34,14 @@ export const createServer = () => {
   app.use(scopePerRequest(container));
 
   app.use(
-    '/docs',
+    "/docs",
     swaggerUi.serve,
     swaggerUi.setup(swaggerDoc, {
       swaggerOptions: {
         persistAuthorization: true,
         displayRequestDuration: true,
       },
-      customSiteTitle: 'Chasis API Docs',
+      customSiteTitle: "Chasis API Docs",
     }),
   );
 
@@ -50,7 +50,7 @@ export const createServer = () => {
 
   app.use((req, res) => {
     res.status(404).json({
-      message: 'Route not found',
+      message: "Route not found",
       code: 404,
     });
   });
