@@ -22,8 +22,8 @@ export default defineConfig({
         "**/infraestructure/logger/**",
         "**/types/**",
         "src/main.ts",
-        "src/server.ts"
-      ]
-    }
-  }
+        "src/server.ts",
+      ],
+    },
+  },
 });

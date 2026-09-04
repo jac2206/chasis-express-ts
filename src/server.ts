@@ -4,27 +4,26 @@ import { container } from "./config/container";
 import v1Routes from "./infraestructure/http/routes/v1";
 import healthRouters from "./infraestructure/http/routes/health.routes";
 import { errorMiddleware } from "./infraestructure/http/middlewares/error.middleware";
-import swaggerUi from "swagger-ui-express"
-import { generateSwagger } from "./infraestructure/docs/swagger"
+import swaggerUi from "swagger-ui-express";
+import { generateSwagger } from "./infraestructure/docs/swagger";
 
 export const createServer = () => {
+  const swaggerDoc = generateSwagger();
 
-  const swaggerDoc = generateSwagger()
-
-  swaggerDoc.components = swaggerDoc.components || {}
+  swaggerDoc.components = swaggerDoc.components || {};
   swaggerDoc.components.securitySchemes = {
     bearerAuth: {
       type: "http",
       scheme: "bearer",
-      bearerFormat: "JWT"
-    }
-  }
+      bearerFormat: "JWT",
+    },
+  };
 
   swaggerDoc.security = [
     {
-      bearerAuth: []
-    }
-  ]
+      bearerAuth: [],
+    },
+  ];
 
   const prefix = "/chasis";
 
@@ -33,18 +32,18 @@ export const createServer = () => {
   app.use(express.json());
 
   app.use(scopePerRequest(container));
-  
+
   app.use(
     "/docs",
     swaggerUi.serve,
     swaggerUi.setup(swaggerDoc, {
       swaggerOptions: {
         persistAuthorization: true,
-        displayRequestDuration: true
+        displayRequestDuration: true,
       },
-      customSiteTitle: "Chasis API Docs"
-    })
-  )
+      customSiteTitle: "Chasis API Docs",
+    }),
+  );
 
   app.use(`${prefix}/health`, healthRouters);
   app.use(`${prefix}/v1`, v1Routes);
@@ -52,7 +51,7 @@ export const createServer = () => {
   app.use((req, res) => {
     res.status(404).json({
       message: "Route not found",
-      code: 404
+      code: 404,
     });
   });
 

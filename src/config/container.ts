@@ -1,8 +1,4 @@
-import {
-  createContainer,
-  asClass,
-  InjectionMode
-} from "awilix";
+import { createContainer, asClass, InjectionMode } from "awilix";
 
 import { HealthService } from "../infraestructure/services/health.service";
 import { HealthController } from "../infraestructure/controllers/health.controller";
@@ -25,7 +21,7 @@ import { UsersController } from "../infraestructure/controllers/v1/users.control
 import { UserRepository } from "../infraestructure/database/repositories/user.repository";
 
 export const container = createContainer({
-  injectionMode: InjectionMode.CLASSIC
+  injectionMode: InjectionMode.CLASSIC,
 });
 
 container.register({
@@ -52,14 +48,14 @@ container.register({
   genericController: asClass(GenericController).scoped(),
   usersController: asClass(UsersController).scoped(),
 
-  httpClient: asClass(HttpClient).singleton()
+  httpClient: asClass(HttpClient).singleton(),
 });
 
 container.register({
-  logger: asClass(WinstonLogger).singleton()
+  logger: asClass(WinstonLogger).singleton(),
 });
 
 container.register({
   genericRepository: asClass(GenericRepository).scoped(),
-  userRepository: asClass(UserRepository).scoped()
+  userRepository: asClass(UserRepository).scoped(),
 });

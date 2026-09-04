@@ -6,10 +6,7 @@ import { authorizeScopes } from "../../middlewares/scope.middleware";
 
 const router = Router();
 
-router.get("/", 
-  authenticateJWT,
-  authorizeScopes(["generic"]),
-  async (req, res) => {
+router.get("/", authenticateJWT, authorizeScopes(["generic"]), async (req, res) => {
   const controller = container.resolve<GenericController>("genericController");
   return controller.getGeneric(req, res);
 });
@@ -21,16 +18,16 @@ router.post("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const controller = container.resolve<GenericController>("genericController");
   return controller.getXIdGeneric(req, res);
-})
+});
 
 router.get("/pokemon/:name", async (req, res) => {
   const controller = container.resolve<GenericController>("genericController");
   return controller.getPokemonXName(req, res);
-})
+});
 
 router.patch("/:id", async (req, res) => {
   const controller = container.resolve<GenericController>("genericController");
   return controller.patchGeneric(req, res);
-})
+});
 
 export default router;
