@@ -5,21 +5,24 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Copiar solo package primero (mejor cache)
+# Copiar package para aprovechar cache
 COPY package*.json ./
 
-# Instalar todas las dependencias 
+# Instalar todas las dependencias
 RUN npm ci
 
 # Copiar código
 COPY . .
+
+# Generar Prisma Client
+RUN npx prisma generate
 
 # Compilar TypeScript
 RUN npm run build
 
 
 # =========================
-# PRODUCTION STAGE :)
+# PRODUCTION STAGE
 # =========================
 FROM node:24-alpine AS production
 
@@ -27,14 +30,17 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copiar solo package
+# Copiar package
 COPY package*.json ./
 
-# Instalar solo prod deps
+# Instalar solo dependencias de producción
 RUN npm ci --omit=dev --ignore-scripts
 
-# Copiar build desde builder
+# Copiar build
 COPY --from=builder /app/dist ./dist
+
+# Copiar Prisma Client generado
+COPY --from=builder /app/src/generated ./src/generated
 
 EXPOSE 3000
 

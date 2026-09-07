@@ -1,391 +1,350 @@
 # 🧱 Express TS Chasis
 
-## 🚀 DDD + Arquitectura Hexagonal + Awilix + Vitest + Biome + Husky + Commitlint + Winston
-
 Backend base profesional construido con:
 
-* Node.js
-* Express 5
-* TypeScript
-* DDD (Domain-Driven Design)
-* Arquitectura Hexagonal (Ports & Adapters)
-* Awilix (Inyección de dependencias)
-* Vitest (Testing + Coverage)
-* Biome (Formatting + Linting)
-* Husky (Git Hooks)
-* Commitlint (Conventional Commits)
-* Winston (Logging estructurado)
-* Dotenv (Variables de entorno)
-* Middleware global de errores
+**Express 5 + TypeScript + Clean Architecture + DDD + Arquitectura Hexagonal + Prisma + PostgreSQL + Awilix + Zod + Swagger + JWT + Winston + Vitest + Biome**
 
 ---
 
-# 🧠 1. Arquitectura
+# 🏗️ Arquitectura
 
-Este proyecto implementa:
+El proyecto combina **Clean Architecture, DDD y Arquitectura Hexagonal**, separando las reglas de negocio de los detalles de infraestructura.
 
-* 🔹 DDD (Domain-Driven Design)
-* 🔹 Arquitectura Hexagonal (Ports & Adapters)
-* 🔹 Clean Architecture
-* 🔹 Inversión de Dependencias
-
----
-
-## 🔷 Arquitectura Hexagonal
-
-El dominio está en el centro y define contratos (interfaces).
-
-La infraestructura implementa esos contratos.
+Flujo general:
 
 ```text
-        HTTP (Express)
-              ↓
-         Controller
-              ↓
-          Use Case
-              ↓
-           Domain
-              ↑
-   Repository / Service / Adapter
+HTTP
+ ↓
+Routes
+ ↓
+Middlewares
+ ↓
+Controllers
+ ↓
+Use Cases
+ ↓
+Domain
+ ↓
+Repository Interfaces
+ ↓
+Infrastructure
+ ↓
+Prisma
+ ↓
+PostgreSQL
 ```
 
-### 📌 Regla Principal
+### Estructura principal
 
-> Las dependencias siempre apuntan hacia el dominio.
+```text
+src/
+├── application/
+│   ├── dto/
+│   └── use-cases/
+├── config/
+├── domain/
+├── infraestructure/
+├── generated/
+│   └── prisma/
+├── main.ts
+└── server.ts
+```
+
+### Responsabilidad de cada capa
+
+| Capa               | Responsabilidad                                     |
+| ------------------ | --------------------------------------------------- |
+| **Domain**         | Entidades, reglas y contratos                       |
+| **Application**    | Casos de uso y DTOs                                 |
+| **Infrastructure** | Express, Prisma, PostgreSQL, JWT, logger y adapters |
+| **Config**         | Variables de entorno e inyección de dependencias    |
+
+La regla principal es que el **Domain no depende de Infrastructure**.
 
 ---
 
-# 🧱 2. Capas del Proyecto
+# 📦 Instalación
 
----
+Requisitos:
 
-## 🟢 2.1 Domain (Centro del sistema)
+* Node.js 24+
+* PostgreSQL
+* npm
 
-Contiene:
-
-* Entidades
-* Interfaces (Ports)
-* Errores de dominio
-* Excepciones personalizadas
-
-❌ No conoce Express
-❌ No conoce base de datos
-❌ No conoce frameworks
-
----
-
-### Ejemplo de Entity
-
-```ts
-export class Generic {
-  constructor(
-    private readonly name: string,
-    private readonly lastName: string,
-    private readonly age: number,
-  ) {
-    if (age < 0) {
-      throw new Error('Age cannot be negative');
-    }
-  }
-
-  toPersistence() {
-    return {
-      name: this.name,
-      lastName: this.lastName,
-      age: this.age,
-    };
-  }
-}
-```
-
----
-
-## 🟢 2.2 Domain Errors
-
-```ts
-export const DomainErrors = {
-  GENERIC_INVALID_NAME: {
-    code: 'GENERIC_INVALID_NAME',
-    message: 'Name must have at least 3 characters',
-    statusCode: 422,
-  },
-
-  GENERIC_NOT_FOUND: {
-    code: 'GENERIC_NOT_FOUND',
-    message: 'Generic entity not found',
-    statusCode: 404,
-  },
-};
-```
-
----
-
-## 🟢 2.3 Domain Exception
-
-```ts
-export class DomainException extends Error {
-  constructor(
-    public readonly code: string,
-    message: string,
-    public readonly statusCode: number,
-  ) {
-    super(message);
-  }
-}
-```
-
----
-
-## 🔵 2.4 Application Layer
-
-Contiene:
-
-* Casos de uso
-* DTOs
-
-### Interface
-
-```ts
-export interface ICreateGenericUseCase {
-  execute(input: GenericRequestDto): Promise<GenericResponseDto>;
-}
-```
-
-### Use Case con validación
-
-```ts
-export class CreateGenericUseCase implements ICreateGenericUseCase {
-  async execute(
-    input: GenericRequestDto,
-  ): Promise<GenericResponseDto> {
-    if (!input.name || input.name.trim().length < 3) {
-      const error = DomainErrors.GENERIC_INVALID_NAME;
-
-      throw new DomainException(
-        error.code,
-        error.message,
-        error.statusCode,
-      );
-    }
-
-    return {
-      name: input.name,
-      lastName: input.lastName,
-      age: input.age,
-    };
-  }
-}
-```
-
----
-
-## 🟣 2.5 Infrastructure
-
-Contiene:
-
-* Controllers
-* Routes
-* Logger
-* Database
-* Middlewares
-* Implementaciones concretas
-
----
-
-### Controller
-
-```ts
-export class GenericController {
-  constructor(
-    private readonly createGenericUseCase: ICreateGenericUseCase,
-  ) {}
-
-  postGeneric = async (req: Request, res: Response) => {
-    const result = await this.createGenericUseCase.execute(req.body);
-
-    res.status(201).json(result);
-  };
-}
-```
-
----
-
-# ⚙️ 3. Middleware Global de Errores
-
-```ts
-import { Request, Response, NextFunction } from 'express';
-import { DomainException } from '../../domain/exceptions/domain.exception';
-import { logger } from '../logger/logger';
-
-export function errorMiddleware(
-  err: any,
-  _req: Request,
-  res: Response,
-  _next: NextFunction,
-) {
-  if (err instanceof DomainException) {
-    logger.warn('Domain error', {
-      code: err.code,
-      message: err.message,
-    });
-
-    return res.status(err.statusCode).json({
-      code: err.code,
-      message: err.message,
-    });
-  }
-
-  logger.error('Unexpected error', err);
-
-  return res.status(500).json({
-    code: 'INTERNAL_SERVER_ERROR',
-    message: 'Internal server error',
-  });
-}
-```
-
-Registrar en `server.ts`:
-
-```ts
-app.use(errorMiddleware);
-```
-
----
-
-# 🪵 4. Logger con Winston
-
-```ts
-import winston from 'winston';
-
-export const logger = winston.createLogger({
-  level: 'info',
-
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json(),
-  ),
-
-  transports: [
-    new winston.transports.Console(),
-  ],
-});
-```
-
----
-
-# 🌎 5. Variables de Entorno
-
-### `.env`
-
-```env
-PORT=3001
-NODE_ENV=local
-SHOW_ENV=true
-
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=generic_db
-
-LOG_LEVEL=info
-```
-
----
-
-### `env.ts`
-
-```ts
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-export const env = {
-  nodeEnv: process.env.NODE_ENV || 'development',
-  port: Number(process.env.PORT) || 3000,
-  showEnv: process.env.SHOW_ENV === 'true',
-};
-```
-
----
-
-# 🧩 6. Inyección de Dependencias – Awilix
-
-```bash
-npm install awilix awilix-express
-```
-
-### `container.ts`
-
-```ts
-import { createContainer, asClass, InjectionMode } from 'awilix';
-
-export const container = createContainer({
-  injectionMode: InjectionMode.CLASSIC,
-});
-```
-
----
-
-# 🚀 7. Instalación y Ejecución
-
-## Clonar repositorio
-
-```bash
-git clone https://github.com/tu-usuario/tu-repo.git
-
-cd tu-repo
-```
-
-## Instalar dependencias
+Instalar dependencias:
 
 ```bash
 npm install
 ```
 
-## Ejecutar en desarrollo
+Configurar las variables de entorno:
 
-```bash
-npm run dev
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE"
 ```
 
-Servidor en:
+---
+
+# 🗄️ Prisma + PostgreSQL
+
+El proyecto utiliza **Prisma 7.10.0** para trabajar con PostgreSQL.
+
+### Instalar Prisma
+
+```bash
+npm install prisma@7.10.0 @prisma/client@7.10.0 @prisma/adapter-pg pg
+```
+
+Para TypeScript:
+
+```bash
+npm install -D @types/pg
+```
+
+### Inicializar Prisma
+
+```bash
+npx prisma init
+```
+
+Esto crea la estructura inicial de Prisma.
 
 ```text
-http://localhost:3001
+prisma/
+└── schema.prisma
+
+prisma.config.ts
+```
+
+### Generar Prisma Client
+
+```bash
+npm run prisma:generate
+```
+
+El cliente generado se encuentra en:
+
+```text
+src/generated/prisma/
 ```
 
 ---
 
-## Compilar proyecto
+# 🧬 Modelos Prisma
 
-```bash
-npm run build
+Los modelos se mantienen separados dentro de:
+
+```text
+prisma/
+├── models/
+├── migrations/
+└── schema.prisma
+```
+
+Actualmente el entorno de pruebas utiliza:
+
+```text
+Database: test
+Schema:   test
+```
+
+```text
+testr
+└── test
+    ├── users
+    ├── addresses
+    └── document_type
+```
+
+La configuración de Prisma se encuentra en:
+
+```text
+prisma.config.ts
 ```
 
 ---
 
-## Ejecutar versión compilada
+# 🔄 Migraciones
+
+Las migraciones permiten versionar los cambios realizados en la base de datos.
+
+### Crear y aplicar una migración
 
 ```bash
-npm start
+npm run prisma:migrate -- --name nombre_migracion
+```
+
+### Crear sin aplicar
+
+```bash
+npm run prisma:migrate:create -- --name nombre_migracion
+```
+
+### Revisar estado
+
+```bash
+npm run prisma:status
+```
+
+### Producción
+
+```bash
+npm run prisma:deploy
+```
+
+```text
+prisma:migrate → desarrollo
+prisma:deploy  → producción
+```
+
+### Reset de desarrollo
+
+```bash
+npm run prisma:reset
+```
+
+**No utilizar en producción.**
+
+### Prisma Studio
+
+```bash
+npm run prisma:studio
 ```
 
 ---
 
-# 🧪 8. Testing con Vitest
+# 💉 Inyección de Dependencias
 
-```bash
-npm install -D vitest @vitest/coverage-v8 supertest
+El proyecto utiliza **Awilix** para resolver las dependencias.
+
+Las implementaciones se registran en:
+
+```text
+src/config/container.ts
 ```
 
-### Ejecutar pruebas
+Flujo:
+
+```text
+Use Case
+   ↓
+Repository Interface
+   ↓
+Repository
+   ↓
+Prisma
+```
+
+Esto permite reemplazar implementaciones fácilmente y facilita las pruebas.
+
+---
+
+# 🔐 Autenticación
+
+La autenticación utiliza **JWT**.
+
+La implementación se encuentra en:
+
+```text
+src/infraestructure/security/
+```
+
+Las rutas protegidas utilizan:
+
+```text
+Authorization: Bearer <token>
+```
+
+---
+
+# ✅ Validación
+
+Los datos de entrada se validan utilizando **Zod**.
+
+Los schemas se encuentran en:
+
+```text
+src/infraestructure/schemas/
+```
+
+Flujo:
+
+```text
+Request
+ ↓
+Validation Middleware
+ ↓
+Zod
+ ↓
+Controller
+ ↓
+Use Case
+```
+
+---
+
+# ⚠️ Manejo de errores
+
+Los errores se centralizan mediante un middleware global.
+
+```text
+Use Case / Domain
+       ↓
+DomainException
+       ↓
+Error Middleware
+       ↓
+HTTP Response
+```
+
+Los errores de dominio se encuentran en:
+
+```text
+src/domain/errors/
+src/domain/exceptions/
+```
+
+---
+
+# 🪵 Logging
+
+El proyecto utiliza **Winston** para logging estructurado.
+
+La implementación se encuentra en:
+
+```text
+src/infraestructure/logger/
+```
+
+---
+
+# 📖 Swagger / OpenAPI
+
+La API está documentada mediante Swagger/OpenAPI.
+
+La documentación se encuentra en:
+
+```text
+src/infraestructure/docs/
+```
+
+---
+
+# 🧪 Testing
+
+El proyecto utiliza **Vitest**.
 
 ```bash
 npm run test
 ```
 
-### Coverage
+Ejecutar una sola vez:
+
+```bash
+npm run test:run
+```
+
+Coverage:
 
 ```bash
 npm run test:coverage
@@ -393,434 +352,183 @@ npm run test:coverage
 
 ---
 
-# 🎨 9. Formateo y calidad de código con Biome
+# 🎨 Calidad de código
 
-Este proyecto utiliza **Biome** para mantener un estándar consistente de formato y calidad de código.
+El proyecto utiliza **Biome**.
 
-Biome se utiliza para:
-
-* Formatear código.
-* Ejecutar linting.
-* Organizar imports.
-* Mantener reglas recomendadas para JavaScript y TypeScript.
-
-Biome reemplaza la necesidad de utilizar **Prettier + ESLint** para estas tareas.
-
----
-
-## 📦 Instalación
-
-```bash
-npm install -D @biomejs/biome
-```
-
-Inicializar Biome:
-
-```bash
-npx @biomejs/biome init
-```
-
-Esto genera:
-
-```text
-biome.json
-```
-
----
-
-## ⚙️ Configuración
-
-La configuración se encuentra en:
-
-```text
-biome.json
-```
-
-El estándar definido para el proyecto utiliza:
-
-* 2 espacios de indentación.
-* Comillas simples.
-* Punto y coma.
-* Trailing commas.
-* Ancho de línea de 88 caracteres.
-* Saltos de línea consistentes.
-* Imports organizados automáticamente.
-* Linter con reglas recomendadas.
-* Finales de línea `LF`.
-
-Biome aplica estas reglas al código JavaScript y TypeScript del proyecto, incluyendo archivos de configuración como `vitest.config.ts`.
-
-No se procesan archivos generados o dependencias como:
-
-```text
-node_modules/
-dist/
-coverage/
-.git/
-```
-
----
-
-## 🧹 Formatear código
-
-Para formatear todo el proyecto:
+Formatear:
 
 ```bash
 npm run format
 ```
 
-Script:
-
-```json
-{
-  "format": "biome format --write ."
-}
-```
-
-Este comando modifica automáticamente los archivos necesarios para cumplir las reglas de formato.
-
----
-
-## 🔍 Validar código
-
-Para validar formato y linting:
+Validar:
 
 ```bash
 npm run check
 ```
 
-Script:
-
-```json
-{
-  "check": "biome check ."
-}
-```
-
-Este comando valida el código sin modificarlo.
-
 ---
 
-# 🪝 10. Git Hooks con Husky
+# 🪝 Git Hooks
 
-El proyecto utiliza **Husky** para automatizar validaciones durante el proceso de commit.
+**Husky** y **Commitlint** automatizan las validaciones de Git.
 
-Husky permite ejecutar comandos automáticamente antes de crear un commit y validar el mensaje del commit.
+Los commits utilizan **Conventional Commits**.
 
----
-
-## 📦 Instalación
-
-```bash
-npm install -D husky
-```
-
-Inicializar Husky:
-
-```bash
-npx husky init
-```
-
-La estructura será:
+Ejemplos:
 
 ```text
-.husky/
-├── pre-commit
-└── commit-msg
+feat: add user repository
+fix: resolve database connection
+test: add user tests
+refactor: improve dependency injection
+docs: update README
+chore: update dependencies
 ```
 
 ---
 
-## 🔍 Pre-commit
+# 🚀 Desarrollo
 
-Archivo:
+Iniciar el proyecto:
 
-```text
-.husky/pre-commit
+```bash
+npm run dev
 ```
 
-Contenido:
+Compilar:
 
-```sh
-#!/usr/bin/env sh
+```bash
+npm run build
+```
 
+Ejecutar la versión compilada:
+
+```bash
+npm start
+```
+
+---
+
+# 📋 Scripts
+
+### Aplicación
+
+```bash
+npm run dev
+npm run build
+npm start
+```
+
+### Prisma
+
+```bash
+npm run prisma:generate
+npm run prisma:validate
+npm run prisma:migrate
+npm run prisma:migrate:create
+npm run prisma:deploy
+npm run prisma:status
+npm run prisma:reset
+npm run prisma:studio
+```
+
+También pueden ejecutarse directamente con Prisma:
+
+```bash
+npx prisma generate
+npx prisma validate
+npx prisma migrate dev
+npx prisma migrate deploy
+npx prisma migrate status
+npx prisma migrate reset
+npx prisma studio
+```
+
+### Testing
+
+```bash
+npm run test
+npm run test:run
+npm run test:coverage
+```
+
+### Calidad
+
+```bash
 npm run format
-```
-
-Cada vez que se realiza un commit:
-
-```bash
-git commit
-```
-
-Husky ejecuta:
-
-1. `npm run format`
-
-De esta manera:
-
-* Biome formatea automáticamente el código.
-* Biome ejecuta el linting.
-* Si existen errores, el commit se detiene.
-
-### Flujo
-
-```text
-git commit
-    ↓
-pre-commit
-    ↓
-npm run format
-    ↓
 npm run check
-    ↓
-Biome
-    ↓
-¿Errores?
- ┌──┴──┐
-No    Sí
- ↓     ↓
-Continúa  ❌ Commit detenido
-```
-
-Los tests no se ejecutan automáticamente en cada commit. Se recomienda ejecutarlos mediante CI/CD o antes de crear un Pull Request.
-
----
-
-# 📝 11. Conventional Commits con Commitlint
-
-El proyecto utiliza **Commitlint** para garantizar que todos los commits sigan el estándar **Conventional Commits**.
-
----
-
-## 📦 Instalación
-
-```bash
-npm install -D @commitlint/cli @commitlint/config-conventional
 ```
 
 ---
 
-## ⚙️ Configuración
+# 🔁 Flujo de trabajo
 
-Archivo:
+Para desarrollar una nueva funcionalidad:
 
 ```text
-commitlint.config.json
+Entity / Domain
+      ↓
+Interface
+      ↓
+Use Case
+      ↓
+Repository
+      ↓
+Controller
+      ↓
+Route
+      ↓
+Schema
 ```
 
-Contenido:
+Si requiere cambios en PostgreSQL:
 
-```json
-{
-  "extends": ["@commitlint/config-conventional"]
-}
+```text
+Modificar modelo Prisma
+        ↓
+prisma:validate
+        ↓
+prisma:migrate
+        ↓
+prisma:generate
+        ↓
+Tests
+        ↓
+Build
+```
+
+En producción:
+
+```text
+CI/CD
+ ↓
+prisma:deploy
+ ↓
+npm start
 ```
 
 ---
 
-## 🪝 Commit-msg
+# 🏁 Objetivo
 
-Archivo:
+Este proyecto funciona como un **chasis reutilizable para APIs profesionales en Node.js**, proporcionando desde el inicio:
 
-```text
-.husky/commit-msg
-```
-
-Contenido:
-
-```sh
-#!/usr/bin/env sh
-
-npx --no -- commitlint --edit "$1"
-```
-
-Este hook valida el mensaje del commit antes de permitir que se cree.
-
----
-
-## ✅ Commits válidos
-
-```bash
-git commit -m "feat: add generic module"
-
-git commit -m "fix: resolve generic validation"
-
-git commit -m "refactor: improve generic repository"
-
-git commit -m "test: add generic use case tests"
-
-git commit -m "docs: update project documentation"
-
-git commit -m "chore: update dependencies"
-```
-
----
-
-## ❌ Commits inválidos
-
-```bash
-git commit -m "crear generic"
-
-git commit -m "feat add generic"
-
-git commit -m "feat : add generic"
-```
-
-El formato correcto es:
-
-```text
-type: description
-```
-
-Ejemplo:
-
-```text
-feat: add generic module
-```
-
-No debe existir un espacio entre el tipo y `:`.
-
----
-
-# 🔄 12. Flujo completo de Git
-
-Al ejecutar:
-
-```bash
-git commit -m "feat: add biome configuration"
-```
-
-se ejecuta:
-
-```text
-                    git commit
-                         ↓
-                ┌────────────────┐
-                │   pre-commit   │
-                └───────┬────────┘
-                        ↓
-                 npm run format
-                        ↓
-                  npm run check
-                        ↓
-                      Biome
-                        ↓
-                ┌────────────────┐
-                │   commit-msg   │
-                └───────┬────────┘
-                        ↓
-                    Commitlint
-                        ↓
-              Conventional Commits
-                        ↓
-                     ✅ Commit
-```
-
-Si Biome encuentra errores o Commitlint detecta un mensaje inválido, el commit no se crea.
-
----
-
-# 📂 13. Estructura del Proyecto
-
-```text
-src
-├── application
-├── domain
-│   ├── entities
-│   ├── interfaces
-│   ├── errors
-│   └── exceptions
-├── infraestructure
-│   ├── controllers
-│   ├── http
-│   ├── logger
-│   ├── middlewares
-│   └── database
-├── config
-│   └── container.ts
-├── main.ts
-└── server.ts
-```
-
-Archivos principales de configuración:
-
-```text
-├── AGENTS.md
-├── biome.json
-├── commitlint.config.json
-├── vitest.config.ts
-├── jsconfig.json
-├── package.json
-└── .husky
-    ├── pre-commit
-    └── commit-msg
-```
-
----
-
-# 📡 14. Endpoints
-
-```text
-GET     /api/v1/generic
-
-POST    /api/v1/generic
-
-PATCH   /api/v1/generic/:id
-```
-
----
-
-# 🧠 15. Principios Aplicados
-
-* Separation of Concerns
-* Dependency Inversion
 * Clean Architecture
-* Single Responsibility
-* Testabilidad
-* Manejo transversal de errores
-* Logging estructurado
-* Formateo y linting automatizado
-* Conventional Commits
-* Git Hooks automatizados
-* Validación automática de código
+* DDD
+* Arquitectura Hexagonal
+* Dependency Injection
+* Repository Pattern
+* Prisma + PostgreSQL
+* JWT
+* Zod
+* Swagger/OpenAPI
+* Winston
+* Vitest
+* Biome
+* Husky
+* Commitlint
+* Migraciones versionadas
 
----
-
-# 🏁 Conclusión
-
-Este chasis permite:
-
-* Escalar a microservicios.
-* Cambiar base de datos sin tocar dominio.
-* Implementar eventos.
-* Probar lógica sin levantar servidor.
-* Mantener una arquitectura limpia y profesional.
-* Mantener un estándar de código consistente.
-* Automatizar formato y linting.
-* Garantizar mensajes de commit consistentes.
-* Evitar commits que no cumplan las reglas del proyecto.
-
----
-
-> El dominio define el negocio.
-> La aplicación ejecuta acciones.
-> La infraestructura implementa detalles.
-> Biome mantiene la calidad y consistencia del código.
-> Husky automatiza las validaciones.
-> Commitlint garantiza Conventional Commits.
-
-```json
-{
-  "sub": "user-12345",
-  "username": "julian.arango",
-  "client_id": "asdasdasdas",
-  "type": "access",
-  "scopes": [
-    "generic",
-    "company"
-  ],
-  "iss": "auth-service",
-  "aud": "express-ts-chasis"
-}
-```
+La idea es que un nuevo proyecto pueda comenzar sobre esta estructura sin tener que configurar nuevamente toda la infraestructura base.

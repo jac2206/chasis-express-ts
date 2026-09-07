@@ -14,7 +14,7 @@ services:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
-      DB_NAME: generic_db
+      DB_NAME: test_db
     depends_on:
       - db
 
@@ -24,7 +24,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: generic_db
+      POSTGRES_DB: test_db
     ports:
       - "5432:5432"
     volumes:
