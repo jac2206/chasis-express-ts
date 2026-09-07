@@ -19,6 +19,7 @@ import { GetMeUseCase } from "../application/use-cases/users/get-me-user.usecase
 import { GetAllUsersUseCase } from "../application/use-cases/users/get-all-users.usecase";
 import { UsersController } from "../infraestructure/controllers/v1/users.controller";
 import { UserRepository } from "../infraestructure/database/repositories/user.repository";
+import { UserPrismaRepository } from "../infraestructure/database/repositories/user-prisma.repository";
 
 export const container = createContainer({
   injectionMode: InjectionMode.CLASSIC,
@@ -57,5 +58,6 @@ container.register({
 
 container.register({
   genericRepository: asClass(GenericRepository).scoped(),
-  userRepository: asClass(UserRepository).scoped(),
+  // userRepository: asClass(UserRepository).scoped(),
+  userRepository: asClass(UserPrismaRepository).scoped(),
 });

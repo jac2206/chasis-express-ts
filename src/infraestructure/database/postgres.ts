@@ -4,9 +4,7 @@ import { logger } from "../logger/logger";
 
 export const pool = new Pool({
   connectionString: env.dataBase.dataBaseUrl,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: false,
 });
 
 export const connectDatabase = async (): Promise<void> => {

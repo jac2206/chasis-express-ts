@@ -1,7 +1,7 @@
 import { createServer } from "./server";
 import { env } from "./config/env";
 import { printEnvironmentVariables } from "./util/env-printer";
-import { closeDatabase, connectDatabase } from "./infraestructure/database/postgres";
+import { prisma } from "./infraestructure/database/prisma";
 import { logger } from "./infraestructure/logger/logger";
 
 async function bootstrap() {
@@ -9,34 +9,39 @@ async function bootstrap() {
 
   const port = env.port;
 
-  const server = app.listen(port, async () => {
-    console.log(`🚀 ${env.appName} v${env.appVersion}`);
-    console.log(`🌎 Environment: ${env.nodeEnv}`);
-    console.log(`📡 Running on port ${port}`);
+  try {
+    await prisma.$connect();
 
-    try {
-      await connectDatabase();
-      console.log("✅ Database connected");
-    } catch (error) {
-      console.error("❌ Database connection failed");
-    }
+    logger.info("✅ Prisma connected to PostgreSQL");
 
-    if (env.showEnv) {
-      printEnvironmentVariables();
-    }
-  });
+    const server = app.listen(port, () => {
+      console.log(`🚀 ${env.appName} v${env.appVersion}`);
+      console.log(`🌎 Environment: ${env.nodeEnv}`);
+      console.log(`📡 Running on port ${port}`);
 
-  const shutdown = async () => {
-    logger.info("🛑 Shutting down gracefully...");
-
-    server.close(async () => {
-      await closeDatabase();
-      process.exit(0);
+      if (env.showEnv) {
+        printEnvironmentVariables();
+      }
     });
-  };
 
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
+    const shutdown = async () => {
+      logger.info("🛑 Shutting down gracefully...");
+
+      server.close(async () => {
+        await prisma.$disconnect();
+        process.exit(0);
+      });
+    };
+
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+  } catch (error) {
+    logger.error("❌ Database connection failed", error);
+
+    await prisma.$disconnect();
+
+    process.exit(1);
+  }
 }
 
 bootstrap();
