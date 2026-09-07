@@ -8,6 +8,22 @@ export const errorMiddleware = (
   res: Response,
   _next: NextFunction,
 ): void => {
+  // JSON mal formado
+  if (err instanceof SyntaxError && "body" in err) {
+    logger.warn({
+      code: "INVALID_JSON",
+      message: "Invalid JSON body",
+    });
+
+    res.status(400).json({
+      code: "INVALID_JSON",
+      message: "Invalid JSON body",
+    });
+
+    return;
+  }
+
+  // Errores de dominio
   if (err instanceof DomainException) {
     logger.warn({
       code: err.code,
@@ -22,6 +38,7 @@ export const errorMiddleware = (
     return;
   }
 
+  // Error desconocido
   logger.error(err);
 
   res.status(500).json({
