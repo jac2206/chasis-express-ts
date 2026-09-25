@@ -2,7 +2,7 @@
 
 Backend base profesional construido con:
 
-**Express 5 + TypeScript + Clean Architecture + DDD + Arquitectura Hexagonal + Prisma + PostgreSQL + Awilix + Zod + Swagger + JWT + Winston + Vitest + Biome**
+**Express 5 + TypeScript + Clean Architecture + DDD + Arquitectura Hexagonal + Prisma + PostgreSQL + Awilix + Zod + Swagger + JWT + Winston + Vitest + Biome + Docker + Floci**
 
 ---
 
@@ -38,6 +38,7 @@ PostgreSQL
 
 ```text
 src/
+
 ├── application/
 │   ├── dto/
 │   └── use-cases/
@@ -68,8 +69,10 @@ La regla principal es que el **Domain no depende de Infrastructure**.
 Requisitos:
 
 * Node.js 24+
-* PostgreSQL
 * npm
+* PostgreSQL
+* Docker Desktop
+* AWS CLI
 
 Instalar dependencias:
 
@@ -107,7 +110,7 @@ npm install -D @types/pg
 npx prisma init
 ```
 
-Esto crea la estructura inicial de Prisma.
+Esto crea la estructura inicial de Prisma:
 
 ```text
 prisma/
@@ -136,6 +139,7 @@ Los modelos se mantienen separados dentro de:
 
 ```text
 prisma/
+
 ├── models/
 ├── migrations/
 └── schema.prisma
@@ -144,9 +148,11 @@ prisma/
 Actualmente el entorno de pruebas utiliza:
 
 ```text
-Database: test
-Schema:   test
+Database: testr
+Schema: test
 ```
+
+Estructura:
 
 ```text
 testr
@@ -210,6 +216,285 @@ npm run prisma:reset
 ```bash
 npm run prisma:studio
 ```
+
+---
+
+# ☁️ AWS Local con Floci
+
+El proyecto utiliza **Floci** para simular servicios de AWS localmente.
+
+El endpoint principal es:
+
+```text
+http://localhost:4566
+```
+
+Los servicios AWS utilizados actualmente son:
+
+* S3
+* SQS
+* Secrets Manager
+* EventBridge
+* Parameter Store
+* DynamoDB
+
+Los recursos iniciales se crean automáticamente mediante:
+
+```text
+scripts/
+└── aws-init.sh
+```
+
+### Inicializar el entorno
+
+Levantar todos los servicios:
+
+```bash
+docker compose up -d
+```
+
+Verificar los contenedores:
+
+```bash
+docker compose ps
+```
+
+Ver los logs de Floci:
+
+```bash
+docker compose logs -f floci
+```
+
+### AWS CLI
+
+Los comandos ejecutados desde el equipo local utilizan:
+
+```bash
+--endpoint-url=http://localhost:4566
+```
+
+Ejemplo:
+
+```bash
+aws --endpoint-url=http://localhost:4566 s3 ls
+```
+
+Consultar las tablas DynamoDB:
+
+```bash
+aws --endpoint-url=http://localhost:4566 dynamodb list-tables
+```
+
+Consultar las colas SQS:
+
+```bash
+aws --endpoint-url=http://localhost:4566 sqs list-queues
+```
+
+Consultar parámetros:
+
+```bash
+aws --endpoint-url=http://localhost:4566 ssm get-parameters-by-path \
+  --path /chasis/local
+```
+
+### Recursos iniciales
+
+El script `scripts/aws-init.sh` crea los recursos necesarios para el entorno local.
+
+Si se requiere un nuevo recurso AWS:
+
+1. Probarlo utilizando AWS CLI.
+2. Agregar su creación al `aws-init.sh`.
+3. Levantar nuevamente el entorno para validar la inicialización.
+4. Si la aplicación necesita consumirlo, agregar el AWS SDK correspondiente.
+
+Ejemplo:
+
+```bash
+aws --endpoint-url=http://localhost:4566 dynamodb list-tables
+```
+
+### AWS SDK
+
+Cuando la aplicación necesite consumir un servicio AWS desde Node.js, se instala el SDK correspondiente.
+
+Ejemplo para DynamoDB:
+
+```bash
+npm install @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb
+```
+
+El endpoint utilizado dentro de Docker es:
+
+```text
+http://floci:4566
+```
+
+Desde el equipo local:
+
+```text
+http://localhost:4566
+```
+
+---
+
+# 🐳 Docker
+
+El proyecto utiliza Docker para ejecutar la aplicación, PostgreSQL y los servicios AWS locales.
+
+### Servicios
+
+```text
+Docker Compose
+│
+├── chasis-app
+│   └── Express API :3000
+│
+├── chasis-db
+│   └── PostgreSQL :5432
+│
+├── chasis-floci
+│   └── AWS Local :4566
+│
+└── sqs-admin
+    └── SQS UI :3999
+```
+
+Todos los servicios utilizan la red:
+
+```text
+chasis-network
+```
+
+### Levantar el entorno
+
+```bash
+docker compose up -d
+```
+
+Ver servicios:
+
+```bash
+docker compose ps
+```
+
+Detener servicios:
+
+```bash
+docker compose down
+```
+
+### URLs locales
+
+API:
+
+```text
+http://localhost:3000
+```
+
+Floci:
+
+```text
+http://localhost:4566
+```
+
+SQS Admin:
+
+```text
+http://localhost:3999
+```
+
+### Comunicación entre contenedores
+
+Desde el equipo local se utiliza:
+
+```text
+localhost
+```
+
+Por ejemplo:
+
+```text
+http://localhost:4566
+```
+
+Desde otro contenedor se utiliza el nombre del servicio:
+
+```text
+floci
+```
+
+Por ejemplo:
+
+```text
+http://floci:4566
+```
+
+Para PostgreSQL:
+
+```text
+postgresql://postgres:postgres@db:5432/test_db
+```
+
+---
+
+# 🐳 Dockerfile
+
+El proyecto utiliza un Dockerfile multi-stage.
+
+### Build
+
+Durante el build se instalan todas las dependencias, se genera Prisma Client y se compila TypeScript.
+
+```dockerfile
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+RUN npx prisma generate
+
+RUN npm run build
+
+
+FROM node:24-alpine AS production
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY package*.json ./
+
+RUN npm ci --omit=dev --ignore-scripts
+
+COPY --from=builder /app/dist ./dist
+
+COPY --from=builder /app/src/generated ./src/generated
+
+EXPOSE 3000
+
+CMD ["node", "dist/main.js"]
+```
+
+Prisma utiliza un cliente generado en:
+
+```text
+src/generated/prisma/
+```
+
+Por esta razón, el build de producción copia el directorio generado:
+
+```dockerfile
+COPY --from=builder /app/src/generated ./src/generated
+```
+
+La dependencia `prisma` permanece en `devDependencies`, ya que solamente se necesita durante el proceso de generación y build.
 
 ---
 
@@ -301,6 +586,7 @@ Los errores de dominio se encuentran en:
 
 ```text
 src/domain/errors/
+
 src/domain/exceptions/
 ```
 
@@ -380,10 +666,15 @@ Ejemplos:
 
 ```text
 feat: add user repository
+
 fix: resolve database connection
+
 test: add user tests
+
 refactor: improve dependency injection
+
 docs: update README
+
 chore: update dependencies
 ```
 
@@ -461,6 +752,15 @@ npm run format
 npm run check
 ```
 
+### Docker
+
+```bash
+docker compose up -d
+docker compose ps
+docker compose logs -f
+docker compose down
+```
+
 ---
 
 # 🔁 Flujo de trabajo
@@ -499,13 +799,31 @@ Tests
 Build
 ```
 
+Si requiere un nuevo servicio AWS local:
+
+```text
+AWS CLI
+   ↓
+Probar recurso en Floci
+   ↓
+Agregar al aws-init.sh
+   ↓
+Validar con AWS CLI
+   ↓
+Instalar AWS SDK
+   ↓
+Implementar Adapter / Repository
+   ↓
+Use Case
+```
+
 En producción:
 
 ```text
 CI/CD
- ↓
+  ↓
 prisma:deploy
- ↓
+  ↓
 npm start
 ```
 
@@ -530,5 +848,7 @@ Este proyecto funciona como un **chasis reutilizable para APIs profesionales en 
 * Husky
 * Commitlint
 * Migraciones versionadas
+* Docker
+* Floci para AWS local
 
 La idea es que un nuevo proyecto pueda comenzar sobre esta estructura sin tener que configurar nuevamente toda la infraestructura base.
