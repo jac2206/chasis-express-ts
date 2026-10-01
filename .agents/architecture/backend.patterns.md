@@ -12,7 +12,7 @@ Declara errores estables en `src/domain/errors/<context>/` con `code`, `message`
 
 ## Puertos y adaptadores
 
-El contrato describe la necesidad del dominio, por ejemplo `I<Aggregate>Repository`. La implementación PostgreSQL debe vivir en `infraestructure/database/repositories` y mapear entre columnas `snake_case` y campos de dominio. Emplea placeholders `$1`, `$2`, etc.
+El contrato describe la necesidad del dominio, por ejemplo `I<Aggregate>Repository`. La implementación debe vivir en `infraestructure/database/repositories` y mapear explícitamente entre persistencia y dominio. Para modelos Prisma, usa `src/infraestructure/database/prisma.ts` y el cliente generado en `src/generated/prisma/`. El repositorio `generic` legacy usa `pg` y debe emplear placeholders `$1`, `$2`, etc.
 
 ## Awilix
 
@@ -24,4 +24,12 @@ El proyecto usa inyección clásica: los nombres de parámetros del constructor 
 - Valida `body`, `params` y `query` con el middleware `validate` antes del controlador.
 - Protege rutas con `authenticateJWT` y después `authorizeScopes([...])` cuando corresponda.
 - Usa códigos HTTP explícitos y respuestas DTO, nunca hashes o campos internos.
+
+## Prisma y migraciones
+
+- Mantén los modelos en `prisma/models/*.prisma` y el generador/datasource en `prisma/schema.prisma`.
+- Revisa `prisma.config.ts` antes de ejecutar comandos; allí se definen la ruta del schema, migraciones y `DATABASE_URL`.
+- Después de cambiar un modelo ejecuta `npm run prisma:validate`, crea/aplica una migración con `npm run prisma:migrate -- --name <nombre>` y regenera con `npm run prisma:generate`.
+- Versiona las migraciones de `prisma/migrations/`. No edites `src/generated/prisma/` manualmente.
+- `prisma:reset` es únicamente para desarrollo y borra datos; nunca lo uses en producción.
 
