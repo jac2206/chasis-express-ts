@@ -11,7 +11,7 @@ API base reutilizable para distintos dominios de negocio. El código actual cont
 | Runtime | Node.js + TypeScript 5, modo estricto |
 | HTTP | Express 5; prefijo `/chasis`; versión `/v1` |
 | DI | Awilix, `InjectionMode.CLASSIC`, scope por petición |
-| Persistencia | PostgreSQL con `pg`; el esquema se define según el producto |
+| Persistencia | Prisma 7.10.0 con `@prisma/adapter-pg` sobre PostgreSQL; el módulo `generic` conserva un repositorio legacy basado en `pg` |
 | Validación y docs | Zod + `@asteasolutions/zod-to-openapi`; Swagger UI en `/docs` |
 | Seguridad | JWT y scopes mediante middlewares |
 | Observabilidad | Winston |
@@ -24,7 +24,9 @@ src/
   domain/           Entidades, errores, excepciones y puertos
   application/      DTOs y casos de uso
   infraestructure/  Adaptadores: HTTP, DB, seguridad, logger, docs y servicios
+    database/       Cliente Prisma, pool legacy y repositorios
   config/           Entorno y composición Awilix
+  generated/prisma/ Cliente Prisma generado; no editar manualmente
   server.ts         Ensamblaje de Express
   main.ts           Bootstrap y apagado
 test/               Espejo de pruebas por capa
@@ -35,8 +37,10 @@ test/               Espejo de pruebas por capa
 - Nombres de archivos: `kebab-case`, con sufijos `.entity.ts`, `.usecase.ts`, `.interface.ts`, `.repository.ts`, `.controller.ts`, `.schema.ts` y `.spec.ts`.
 - Los casos de uso exponen `execute(...)` y sus contratos están en `src/domain/interfaces/use-cases/`.
 - Los repositorios reciben/devuelven entidades de dominio, no DTOs HTTP.
+- `UserPrismaRepository` es la implementación activa de usuarios y usa `src/infraestructure/database/prisma.ts`; `GenericRepository` es un ejemplo legacy basado en `pg`.
+- El esquema Prisma se compone desde `prisma/schema.prisma` y `prisma/models/*.prisma`, con migraciones en `prisma/migrations/` y configuración en `prisma.config.ts`.
 - El middleware global convierte `DomainException` a `{ code, message }`; la validación Zod responde 422 con `VALIDATION_ERROR`.
-- Las rutas de usuarios ya son la referencia completa de validación + documentación con `registerRoute`.
+- Las rutas de usuarios son la referencia completa de validación + documentación con `registerRoute`; las rutas `generic` son legacy y deben migrarse gradualmente.
 
 ## Límites y decisiones pendientes
 

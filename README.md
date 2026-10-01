@@ -92,7 +92,7 @@ DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE"
 
 El proyecto utiliza **Prisma 7.10.0** para trabajar con PostgreSQL.
 
-### Instalar Prisma
+### Dependencias Prisma
 
 ```bash
 npm install prisma@7.10.0 @prisma/client@7.10.0 @prisma/adapter-pg pg
@@ -104,17 +104,19 @@ Para TypeScript:
 npm install -D @types/pg
 ```
 
-### Inicializar Prisma
+### Configuración existente
 
-```bash
-npx prisma init
+```text
+La configuración ya existe en `prisma.config.ts`; no es necesario ejecutar `npx prisma init`.
 ```
 
-Esto crea la estructura inicial de Prisma:
+La estructura vigente de Prisma es:
 
 ```text
 prisma/
-└── schema.prisma
+├── schema.prisma
+├── models/
+└── migrations/
 
 prisma.config.ts
 ```
@@ -145,21 +147,20 @@ prisma/
 └── schema.prisma
 ```
 
-Actualmente el entorno de pruebas utiliza:
+Actualmente el esquema PostgreSQL utilizado por Prisma es:
 
 ```text
-Database: testr
+Database: la definida por `DATABASE_URL`
 Schema: test
 ```
 
 Estructura:
 
 ```text
-testr
-└── test
-    ├── users
-    ├── addresses
-    └── document_type
+test
+├── users
+├── addresses
+└── document_type
 ```
 
 La configuración de Prisma se encuentra en:
@@ -173,6 +174,8 @@ prisma.config.ts
 # 🔄 Migraciones
 
 Las migraciones permiten versionar los cambios realizados en la base de datos.
+
+Los modelos se mantienen en `prisma/models/*.prisma` y `prisma/schema.prisma` es el punto de entrada. Después de cambiar un modelo, valida, crea la migración y regenera el cliente.
 
 ### Crear y aplicar una migración
 
@@ -521,6 +524,8 @@ Prisma
 ```
 
 Esto permite reemplazar implementaciones fácilmente y facilita las pruebas.
+
+La implementación activa de usuarios es `UserPrismaRepository`, que usa `src/infraestructure/database/prisma.ts`. El módulo `generic` conserva `GenericRepository` basado en `pg` como ejemplo legacy; los nuevos módulos deben usar Prisma salvo que exista una decisión documentada.
 
 ---
 
