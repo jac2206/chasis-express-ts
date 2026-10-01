@@ -25,6 +25,7 @@ No inventes reglas de negocio, estados, vigencias, cálculos, límites ni revers
 - Usa `DomainErrors` + `DomainException` para errores previstos. No filtres detalles de SQL, tokens, hashes ni errores internos.
 - Obtén dependencias del contenedor por el nombre acordado y registra cualquier dependencia nueva en `src/config/container.ts`.
 - Conserva el directorio existente `src/infraestructure` (incluida su ortografía) para no introducir árboles paralelos.
+- Respeta `.gitattributes` y `.editorconfig`: usa UTF-8, finales de línea LF y no conviertas archivos a CRLF manualmente.
 - No uses `any` en código nuevo; tipa entradas, resultados, errores y `Request` enriquecidos.
 - Los modelos Prisma viven en `prisma/models/`; `src/generated/prisma/` es generado y no se edita manualmente.
 - Los repositorios Prisma mapean explícitamente entre modelos Prisma y entidades de dominio. El repositorio `generic` legacy que usa `pg` debe parametrizar SQL con `$1`, `$2`, etc.

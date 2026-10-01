@@ -80,6 +80,16 @@ Instalar dependencias:
 npm install
 ```
 
+### Compatibilidad entre sistemas
+
+El repositorio usa UTF-8 y finales de línea LF para mantener el código consistente en Windows, macOS y Linux. Esta política está definida en `.gitattributes` y `.editorconfig`.
+
+Si el repositorio ya tenía archivos con otro formato, normalízalos una sola vez:
+
+```bash
+git add --renormalize .
+```
+
 Configurar las variables de entorno:
 
 ```env

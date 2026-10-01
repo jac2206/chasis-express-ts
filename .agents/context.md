@@ -16,6 +16,7 @@ API base reutilizable para distintos dominios de negocio. El código actual cont
 | Seguridad | JWT y scopes mediante middlewares |
 | Observabilidad | Winston |
 | Pruebas | Vitest, Supertest, cobertura V8 y Stryker |
+| Compatibilidad | UTF-8 y finales de línea LF definidos por `.gitattributes` y `.editorconfig` |
 
 ## Árbol de código
 
