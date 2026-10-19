@@ -20,6 +20,11 @@ import { GetAllUsersUseCase } from "../application/use-cases/users/get-all-users
 import { UsersController } from "../infraestructure/controllers/v1/users.controller";
 import { UserRepository } from "../infraestructure/database/repositories/user.repository";
 import { UserPrismaRepository } from "../infraestructure/database/repositories/user-prisma.repository";
+import { RefreshTokenUseCase } from "../application/use-cases/users/refresh-token.usecase";
+import { ClientCredentialsUseCase } from "../application/use-cases/auth/client-credentials.usecase";
+import { AuthController } from "../infraestructure/controllers/v1/auth.controller";
+import { ServiceClientPrismaRepository } from "../infraestructure/database/repositories/service-client-prisma.repository";
+import { ManageServiceClientUseCase } from "../application/use-cases/auth/manage-service-client.usecase";
 
 export const container = createContainer({
   injectionMode: InjectionMode.CLASSIC,
@@ -36,6 +41,9 @@ container.register({
   registerUserUseCase: asClass(RegisterUserUseCase).scoped(),
   getMeUseCase: asClass(GetMeUseCase).scoped(),
   getAllUsersUseCase: asClass(GetAllUsersUseCase).scoped(),
+  refreshTokenUseCase: asClass(RefreshTokenUseCase).scoped(),
+  clientCredentialsUseCase: asClass(ClientCredentialsUseCase).scoped(),
+  manageServiceClientUseCase: asClass(ManageServiceClientUseCase).scoped(),
 
   // Services
   healthService: asClass(HealthService).singleton(),
@@ -48,6 +56,7 @@ container.register({
   healthController: asClass(HealthController).scoped(),
   genericController: asClass(GenericController).scoped(),
   usersController: asClass(UsersController).scoped(),
+  authController: asClass(AuthController).scoped(),
 
   httpClient: asClass(HttpClient).singleton(),
 });
@@ -60,4 +69,5 @@ container.register({
   genericRepository: asClass(GenericRepository).scoped(),
   // userRepository: asClass(UserRepository).scoped(),
   userRepository: asClass(UserPrismaRepository).scoped(),
+  serviceClientRepository: asClass(ServiceClientPrismaRepository).scoped(),
 });

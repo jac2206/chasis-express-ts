@@ -40,7 +40,17 @@ export const loginUserRequestSchema = z.object({
 
 export const loginUserResponseSchema = z.object({
   token: z.string(),
+  refreshToken: z.string(),
+  tokenType: z.literal("Bearer"),
+  expiresIn: z.number().int().positive(),
+  refreshExpiresIn: z.number().int().positive(),
 });
+
+export const refreshTokenRequestSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
+export const refreshTokenResponseSchema = loginUserResponseSchema;
 
 export const meUserResponseSchema = z.object({
   documentType: z.string(),
