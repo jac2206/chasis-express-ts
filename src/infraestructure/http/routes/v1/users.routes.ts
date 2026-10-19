@@ -6,8 +6,6 @@ import { authorizeScopes } from "../../middlewares/scope.middleware";
 import { validate } from "../../middlewares/validate.middleware";
 import {
   getUsersResonseSchema,
-  loginUserRequestSchema,
-  loginUserResponseSchema,
   meUserResponseSchema,
   registerUserRequestSchema,
   registerUserResponseSchema,
@@ -43,21 +41,6 @@ registerRoute(router, registry, {
   handler: async (req, res) => {
     const controller = container.resolve<UsersController>("usersController");
     return controller.register(req, res);
-  },
-});
-
-registerRoute(router, registry, {
-  method: "post",
-  path: "/login",
-  swaggerPath: "/v1/users/login",
-  tag: "Users",
-  bodySchema: loginUserRequestSchema,
-  responseSchema: loginUserResponseSchema,
-  isProtected: false,
-  middlewares: [validate({ body: loginUserRequestSchema })],
-  handler: async (req, res) => {
-    const controller = container.resolve<UsersController>("usersController");
-    return controller.login(req, res);
   },
 });
 
