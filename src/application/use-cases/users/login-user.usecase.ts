@@ -5,6 +5,7 @@ import { ILoginUserUseCase } from "../../../domain/interfaces/use-cases/users/lo
 import { IAuthService } from "../../../domain/interfaces/services/auth.service.interface";
 import { DomainErrors } from "../../../domain/errors/domain-errors";
 import { DomainException } from "../../../domain/exceptions/domain.exception";
+import { env } from "../../../config/env";
 
 export class LoginUserUseCase implements ILoginUserUseCase {
   constructor(
@@ -27,17 +28,35 @@ export class LoginUserUseCase implements ILoginUserUseCase {
       throw new DomainException(error.code, error.message, error.statusCode);
     }
 
-    const token = this.authService.generateToken({
+    const tokenPayload = {
       sub: user.documentNumber,
       email: user.email,
-      type: "access",
       scopes: ["user"],
-    });
+    };
+
+    const token = this.authService.generateToken({ ...tokenPayload, type: "access" });
+    const refreshToken = this.authService.generateRefreshToken(tokenPayload);
 
     const response: LoginUserResponseDTO = {
       token,
+      refreshToken,
+      tokenType: "Bearer",
+      expiresIn: durationInSeconds(env.jwtAccessExpiresIn),
+      refreshExpiresIn: durationInSeconds(env.jwtRefreshExpiresIn),
     };
 
     return response;
   }
 }
+
+const durationInSeconds = (duration: string): number => {
+  const match = /^(\d+)([smhd])$/.exec(duration);
+
+  if (!match) {
+    return 0;
+  }
+
+  const value = Number(match[1]);
+  const multipliers: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400 };
+  return value * multipliers[match[2]];
+};

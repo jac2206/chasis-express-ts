@@ -170,6 +170,7 @@ Estructura:
 test
 ├── users
 ├── addresses
+├── service_clients
 └── document_type
 ```
 
@@ -541,12 +542,63 @@ La implementación activa de usuarios es `UserPrismaRepository`, que usa `src/in
 
 # 🔐 Autenticación
 
-La autenticación utiliza **JWT**.
+La autenticación utiliza **JWT** y está separada del módulo de usuarios.
+
+El módulo `auth` expone tres flujos:
+
+| Endpoint | Uso | Respuesta |
+| --- | --- | --- |
+| `POST /chasis/v1/auth/login` | Login de usuario | Access token + refresh token |
+| `POST /chasis/v1/auth/refresh` | Renovar sesión móvil | Nuevo access token + refresh token |
+| `POST /chasis/v1/auth/client-credentials` | Server-to-server | Access token |
+| `POST /chasis/v1/auth/service-clients` | Crear cliente técnico | Client ID + secreto (una vez) |
+| `POST /chasis/v1/auth/service-clients/:clientId/rotate-secret` | Rotar secreto | Nuevo secreto (una vez) |
+| `PATCH /chasis/v1/auth/service-clients/:clientId/disable` | Desactivar cliente | Estado |
+
+Login de usuario:
+
+```json
+{
+  "email": "usuario@email.com",
+  "password": "Password1"
+}
+```
+
+Renovación:
+
+```json
+{
+  "refreshToken": "<refresh-token>"
+}
+```
+
+Cliente técnico:
+
+```json
+{
+  "clientId": "billing-service",
+  "clientSecret": "<secret>"
+}
+```
+
+Los secretos de clientes técnicos se almacenan como hash en
+`test.service_clients`; nunca deben guardarse en texto plano. Sus scopes se
+incluyen en el access token. Las operaciones administrativas requieren el
+scope `service-clients:manage`; no se usa un scope genérico `ADM`.
+
+Variables opcionales para la vigencia de tokens:
+
+```env
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=30d
+```
 
 La implementación se encuentra en:
 
 ```text
 src/infraestructure/security/
+src/application/use-cases/auth/
+src/infraestructure/http/routes/v1/auth.routes.ts
 ```
 
 Las rutas protegidas utilizan:
