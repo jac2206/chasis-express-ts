@@ -1,6 +1,11 @@
 import bcrypt from "bcrypt";
 import { randomBytes } from "node:crypto";
-import type { CreateServiceClientRequestDTO, CreateServiceClientResponseDTO, RotateServiceClientResponseDTO, ServiceClientStatusResponseDTO } from "../../dto/service-client.dto";
+import type {
+  CreateServiceClientRequestDTO,
+  CreateServiceClientResponseDTO,
+  RotateServiceClientResponseDTO,
+  ServiceClientStatusResponseDTO,
+} from "../../dto/service-client.dto";
 import { DomainErrors } from "../../../domain/errors/domain-errors";
 import { DomainException } from "../../../domain/exceptions/domain.exception";
 import type { IServiceClientRepository } from "../../../domain/interfaces/repositories/service-client.repository.interface";
@@ -9,7 +14,9 @@ import type { IManageServiceClientUseCase } from "../../../domain/interfaces/use
 export class ManageServiceClientUseCase implements IManageServiceClientUseCase {
   constructor(private readonly serviceClientRepository: IServiceClientRepository) {}
 
-  async create(data: CreateServiceClientRequestDTO): Promise<CreateServiceClientResponseDTO> {
+  async create(
+    data: CreateServiceClientRequestDTO,
+  ): Promise<CreateServiceClientResponseDTO> {
     const existing = await this.serviceClientRepository.findByClientId(data.clientId);
     if (existing) {
       const error = DomainErrors.SERVICE_CLIENT_ALREADY_EXISTS;

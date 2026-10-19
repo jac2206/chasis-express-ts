@@ -9,7 +9,11 @@ import type { IClientCredentialsUseCase } from "../../../domain/interfaces/use-c
 import type { ILoginUserUseCase } from "../../../domain/interfaces/use-cases/users/login-user.usecase.interface";
 import type { IRefreshTokenUseCase } from "../../../domain/interfaces/use-cases/users/refresh-token.usecase.interface";
 import type { IManageServiceClientUseCase } from "../../../domain/interfaces/use-cases/auth/manage-service-client.usecase.interface";
-import type { CreateServiceClientResponseDTO, RotateServiceClientResponseDTO, ServiceClientStatusResponseDTO } from "../../../application/dto/service-client.dto";
+import type {
+  CreateServiceClientResponseDTO,
+  RotateServiceClientResponseDTO,
+  ServiceClientStatusResponseDTO,
+} from "../../../application/dto/service-client.dto";
 
 export class AuthController {
   constructor(
@@ -50,9 +54,7 @@ export class AuthController {
     res: Response<RotateServiceClientResponseDTO>,
   ): Promise<void> => {
     const clientId = getClientId(req);
-    res.status(200).json(
-      await this.manageServiceClientUseCase.rotateSecret(clientId),
-    );
+    res.status(200).json(await this.manageServiceClientUseCase.rotateSecret(clientId));
   };
 
   disableServiceClient = async (

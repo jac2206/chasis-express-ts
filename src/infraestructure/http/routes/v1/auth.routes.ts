@@ -38,24 +38,51 @@ registerRoute(router, registry, {
 });
 
 registerRoute(router, registry, {
-  method: "post", path: "/service-clients", swaggerPath: "/v1/auth/service-clients", tag: "Auth",
-  bodySchema: createServiceClientRequestSchema, responseSchema: createServiceClientResponseSchema,
-  isProtected: true, middlewares: [authenticateJWT, authorizeScopes(["service-clients:manage"]), validate({ body: createServiceClientRequestSchema })],
+  method: "post",
+  path: "/service-clients",
+  swaggerPath: "/v1/auth/service-clients",
+  tag: "Auth",
+  bodySchema: createServiceClientRequestSchema,
+  responseSchema: createServiceClientResponseSchema,
+  isProtected: true,
+  middlewares: [
+    authenticateJWT,
+    authorizeScopes(["service-clients:manage"]),
+    validate({ body: createServiceClientRequestSchema }),
+  ],
   customResponses: { 201: { description: "Created" } },
   handler: (req, res) => controller().createServiceClient(req, res),
 });
 
 registerRoute(router, registry, {
-  method: "post", path: "/service-clients/:clientId/rotate-secret", swaggerPath: "/v1/auth/service-clients/{clientId}/rotate-secret", tag: "Auth",
-  paramsSchema: serviceClientParamsSchema, responseSchema: rotateServiceClientResponseSchema,
-  isProtected: true, middlewares: [authenticateJWT, authorizeScopes(["service-clients:manage"]), validate({ params: serviceClientParamsSchema })],
+  method: "post",
+  path: "/service-clients/:clientId/rotate-secret",
+  swaggerPath: "/v1/auth/service-clients/{clientId}/rotate-secret",
+  tag: "Auth",
+  paramsSchema: serviceClientParamsSchema,
+  responseSchema: rotateServiceClientResponseSchema,
+  isProtected: true,
+  middlewares: [
+    authenticateJWT,
+    authorizeScopes(["service-clients:manage"]),
+    validate({ params: serviceClientParamsSchema }),
+  ],
   handler: (req, res) => controller().rotateServiceClientSecret(req, res),
 });
 
 registerRoute(router, registry, {
-  method: "patch", path: "/service-clients/:clientId/disable", swaggerPath: "/v1/auth/service-clients/{clientId}/disable", tag: "Auth",
-  paramsSchema: serviceClientParamsSchema, responseSchema: serviceClientStatusResponseSchema,
-  isProtected: true, middlewares: [authenticateJWT, authorizeScopes(["service-clients:manage"]), validate({ params: serviceClientParamsSchema })],
+  method: "patch",
+  path: "/service-clients/:clientId/disable",
+  swaggerPath: "/v1/auth/service-clients/{clientId}/disable",
+  tag: "Auth",
+  paramsSchema: serviceClientParamsSchema,
+  responseSchema: serviceClientStatusResponseSchema,
+  isProtected: true,
+  middlewares: [
+    authenticateJWT,
+    authorizeScopes(["service-clients:manage"]),
+    validate({ params: serviceClientParamsSchema }),
+  ],
   handler: (req, res) => controller().disableServiceClient(req, res),
 });
 
