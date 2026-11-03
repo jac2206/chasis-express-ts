@@ -7,7 +7,7 @@ description: >
   logic, persistence, integrations, infrastructure, and execution flows without
   inventing behavior.
 metadata:
-  version: "1.1.0"
+  version: "1.1.1"
 ---
 
 # Backend Documentation
@@ -15,15 +15,19 @@ metadata:
 Analyze a backend implementation and create or update technical documentation that
 describes the behavior supported by the code.
 
-The primary general output is `docs/main.md`; use-case documents are created under
-the documentation location discovered in the analyzed project.
+The general overview output is `docs/main.md` by design. Use-case documents are
+created under the documentation location discovered in the analyzed project.
 
-The Skill must adapt to the project's actual paths, documentation conventions,
-templates, and terminology rather than imposing a fixed project structure.
+`docs/main.md` is the deliberate path contract for the general overview. For
+use-case documents and supporting material, adapt to the project's actual paths,
+documentation conventions, templates, and terminology rather than imposing a
+fixed project structure.
 
-For every documented use case, the Skill must also reconstruct and document its
-actual execution flow, including a Mermaid flow diagram when the project's
-documentation convention or template supports diagrams.
+For every documented use case, reconstruct and document its actual execution
+flow. Include a Mermaid diagram when the project's template or convention calls
+for one. If no local template or diagram convention exists, include a diagram
+when it materially clarifies meaningful steps, decisions, or side effects. Follow
+an existing template that omits diagrams.
 
 ## Purpose
 
@@ -164,11 +168,16 @@ The Skill should produce:
     before writing.
   - The local template belongs to the analyzed project; never copy it into this
     Skill.
+  - The bundled `templates/use-case-document.md` is an optional starter, not the
+    default. Use it only when the user or project explicitly selects it, and never
+    in place of a project-local template.
 
 ### Flow diagrams
 
 - A Mermaid flow diagram for each documented use case when the project's local
-  template or documentation convention defines a flow-diagram section.
+  template or documentation convention calls for one. If no local template or
+  diagram convention exists, add a diagram only when it materially clarifies a
+  meaningful execution flow. Follow an existing template that omits diagrams.
   - The diagram must be generated from the actual implementation.
   - It must represent the execution path of the use case.
   - It must follow the visual and structural conventions defined by the project's
@@ -317,6 +326,8 @@ If no template exists:
 - Use a minimal structure appropriate for the project's documentation style.
 - Generate a flow diagram when the use case has meaningful execution steps,
   decisions, dependencies, or integrations.
+- Do not apply the bundled `templates/use-case-document.md` unless the user or
+  project explicitly selects it.
 
 Use only applicable sections.
 
@@ -358,8 +369,11 @@ derived from schemas, tests, or actual code.
 
 ### 7. Generate the flow diagram
 
-For every documented use case whose project template or documentation convention
-defines a flow-diagram section, generate or update the Mermaid diagram.
+Generate or update a Mermaid diagram when the project template or documentation
+convention calls for one. If no local template or diagram convention exists, use
+a Mermaid diagram when it materially clarifies meaningful execution steps,
+decisions, dependencies, or side effects. Follow an existing template that omits
+diagrams.
 
 The diagram must be derived from the evidence map created during implementation
 analysis.
@@ -530,8 +544,10 @@ The Skill must:
   convention when generating use-case documents.
 - Treat a local documentation template as the structural contract for the
   generated document.
-- Generate a flow diagram for every use case when the local template or
-  documentation convention defines one.
+- Generate a flow diagram when the local template or documentation convention
+  calls for one, or when no local template or diagram convention exists and a
+  diagram materially clarifies the execution flow.
+- Follow an existing template that omits diagrams.
 - Derive every diagram from the implementation evidence map.
 - Keep the diagram synchronized with the documented execution flow.
 - Include only sections, branches, components, and diagrams that apply to the
@@ -576,8 +592,9 @@ The Skill must not:
   backend.
 - Do not require a specific documentation directory or template filename.
 - Do not require a specific architecture or framework.
-- Do not require Mermaid when the project's documentation convention does not use
-  diagrams, but use it when the project's local documentation contract defines it.
+- Respect the project's Mermaid conventions and existing template structure. If
+  there is no local template or diagram convention, use Mermaid only when it
+  materially clarifies the execution flow.
 
 ## Tools
 
@@ -637,7 +654,9 @@ The result is valid when:
       convention were respected.
 - [ ] The general document links to the actual use-case documentation and its index
       is consistent.
-- [ ] Every use case requiring a flow diagram contains one.
+- [ ] Every use case contains a flow diagram when its local template or convention
+      calls for one, or when no such contract exists and a diagram materially
+      clarifies the flow.
 - [ ] Every flow diagram reflects the actual implementation path.
 - [ ] Diagram nodes and relationships are supported by implementation evidence.
 - [ ] Meaningful validations, decisions, integrations, persistence operations,

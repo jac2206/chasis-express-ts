@@ -57,7 +57,7 @@ Valida y devuelve una propuesta de actualización de un objeto generic. No modif
 ### Éxito (`200`)
 
 ```json
-{ "message": "PATCH request received", "result": { "name": "Julian", "lastName": "Arango", "age": 30 } }
+{ "message": "PATCH request received", "result": { "name": "Julian", "lastName": "Arango", "age": 30, "id": "123" } }
 ```
 
 ### Errores
@@ -76,12 +76,14 @@ Valida y devuelve una propuesta de actualización de un objeto generic. No modif
 
 ```mermaid
 flowchart TD
-    A[Cliente HTTP] --> B[PATCH /chasis/v1/generic/:id]
-    B --> C[GenericController.patchGeneric]
-    C --> D{¿id presente?}
-    D -- No --> E[GENERIC_ID_REQUIRED 400]
-    D -- Sí --> F{¿name válido?}
-    F -- No --> G[GENERIC_INVALID_NAME 422]
-    F -- Sí --> H[Construir resultado en memoria]
-    H --> I[Respuesta 200]
+    A[Cliente HTTP] --> B[express.json]
+    B -->|JSON mal formado| X[INVALID_JSON 400]
+    B -->|Body procesado| C[PATCH /chasis/v1/generic/:id]
+    C --> D[GenericController.patchGeneric]
+    D --> E{¿id presente?}
+    E -- No --> F[GENERIC_ID_REQUIRED 400]
+    E -- Sí --> G{¿name válido?}
+    G -- No --> H[GENERIC_INVALID_NAME 422]
+    G -- Sí --> I[Construir resultado en memoria]
+    I --> J[Respuesta 200]
 ```

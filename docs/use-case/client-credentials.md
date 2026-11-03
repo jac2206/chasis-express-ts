@@ -71,8 +71,9 @@ Autentica un cliente técnico y emite un token de acceso con sus scopes.
 ```mermaid
 flowchart TD
     A[Cliente técnico] --> B[POST /chasis/v1/auth/client-credentials]
-    B --> C[Validar body con Zod]
-    C --> D[Buscar service client]
+    B --> C{¿Body válido según Zod?}
+    C -- No --> V[VALIDATION_ERROR 422]
+    C -- Sí --> D[ServiceClientPrismaRepository.findByClientId]
     D --> E{¿Cliente activo y secreto válido?}
     E -- No --> F[INVALID_CLIENT_CREDENTIALS 401]
     E -- Sí --> G[Generar access token con scopes]

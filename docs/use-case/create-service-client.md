@@ -60,7 +60,8 @@ Crea un cliente técnico, almacena su secreto como hash y devuelve el secreto en
 
 | HTTP | Código | Causa |
 | --- | --- | --- |
-| 401/403 | Middleware de autenticación/autorización | Token inválido o scope faltante |
+| 401 | `UNAUTHORIZED` / `INVALID_TOKEN` | Falta el bearer token o es inválido/expiró. Si el token no contiene el scope requerido, el middleware devuelve `401` con el código `UNAUTHORIZED ` (incluye un espacio final). |
+| 403 | `FORBIDDEN` | El token verificado no contiene el claim `scopes`. |
 | 409 | `SERVICE_CLIENT_ALREADY_EXISTS` | ID duplicado |
 | 422 | `VALIDATION_ERROR` | Body inválido |
 
@@ -73,9 +74,13 @@ Crea un cliente técnico, almacena su secreto como hash y devuelve el secreto en
 ```mermaid
 flowchart TD
     A[Cliente autorizado] --> B[authenticateJWT]
-    B --> C[authorizeScopes: service-clients:manage]
-    C --> D[Validar body con Zod]
-    D --> E{¿clientId existente?}
+    B -->|Token faltante o inválido| X[401 UNAUTHORIZED / INVALID_TOKEN]
+    B -->|Token válido| C[authorizeScopes: service-clients:manage]
+    C -->|Sin claim scopes| Y[403 FORBIDDEN]
+    C -->|Scope ausente| Z[401 UNAUTHORIZED con espacio final]
+    C -->|Scope presente| D{¿Body válido según Zod?}
+    D -- No --> V[VALIDATION_ERROR 422]
+    D -- Sí --> E{¿clientId existente?}
     E -- Sí --> F[SERVICE_CLIENT_ALREADY_EXISTS 409]
     E -- No --> G[Generar secreto y hash bcrypt]
     G --> H[(PostgreSQL: service_clients)]

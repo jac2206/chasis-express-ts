@@ -53,9 +53,11 @@ No recibe body, path params ni query.
 
 | HTTP | Código | Causa |
 | --- | --- | --- |
-| 401 | `UNAUTHORIZED` o `INVALID_TOKEN` | Falta o invalidez del JWT |
-| 403 | `FORBIDDEN` | No hay scopes |
+| 401 | `UNAUTHORIZED` / `INVALID_TOKEN` | Falta o invalidez/expiración del JWT; también se usa `UNAUTHORIZED ` (espacio final) cuando el token carece del scope `user`. |
+| 403 | `FORBIDDEN` | El token verificado no contiene el claim `scopes`. |
 | 404 | `USER_NOT_FOUND` | No existe el usuario del claim `sub` |
+
+La entidad permite que `phone` sea `null`, pero el schema OpenAPI de esta respuesta lo declara como string; la implementación no valida la respuesta contra ese schema.
 
 ## Detalles técnicos
 
@@ -67,8 +69,11 @@ No recibe body, path params ni query.
 ```mermaid
 flowchart TD
     A[Cliente HTTP] --> B[authenticateJWT]
-    B --> C[authorizeScopes: user]
-    C --> D[Leer req.user.sub]
+    B -->|Token faltante o inválido| X[401 UNAUTHORIZED / INVALID_TOKEN]
+    B -->|Token válido| C[authorizeScopes: user]
+    C -->|Sin claim scopes| Y[403 FORBIDDEN]
+    C -->|Scope user ausente| Z[401 UNAUTHORIZED con espacio final]
+    C -->|Scope user presente| D[Leer req.user.sub]
     D --> E[GetMeUseCase]
     E --> F[UserPrismaRepository.findByDocument]
     F --> G[(PostgreSQL: users)]
