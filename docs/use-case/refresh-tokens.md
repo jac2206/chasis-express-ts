@@ -67,9 +67,10 @@ Devuelve `{ token, refreshToken, tokenType: "Bearer", expiresIn, refreshExpiresI
 ```mermaid
 flowchart TD
     A[Cliente HTTP] --> B[POST /chasis/v1/auth/refresh]
-    B --> C[Validar body con Zod]
-    C --> D[Verificar refresh token]
-    D --> E{¿Token válido y type refresh?}
+    B --> C{¿Body válido según Zod?}
+    C -- No --> V[VALIDATION_ERROR 422]
+    C -- Sí --> D[Verificar refresh token]
+    D --> E{¿Firma, expiración y type refresh válidos?}
     E -- No --> F[INVALID_REFRESH_TOKEN 401]
     E -- Sí --> G[Generar nuevo par de tokens]
     G --> H[Respuesta 200]

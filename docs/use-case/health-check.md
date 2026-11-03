@@ -19,7 +19,7 @@ Permite comprobar que la API responde.
 
 ## Precondiciones y prerrequisitos
 
-- No se requiere autenticación ni conexión a la base de datos para ejecutar el controlador.
+- No se requiere autenticación y el controlador no consulta la base de datos. Sin embargo, `src/main.ts` solo inicia el listener después de conectar Prisma, así que la API no sirve esta ruta cuando falla la conexión inicial.
 
 ## Parámetros de entrada
 

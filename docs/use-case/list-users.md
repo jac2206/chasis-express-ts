@@ -71,8 +71,11 @@ El schema OpenAPI registrado es un objeto, mientras que el controlador devuelve 
 ```mermaid
 flowchart TD
     A[Cliente HTTP] --> B[authenticateJWT]
-    B --> C[authorizeScopes: user]
-    C --> D[GetAllUsersUseCase]
+    B -->|Token faltante o inválido| X[401 UNAUTHORIZED / INVALID_TOKEN]
+    B -->|Token válido| C[authorizeScopes: user]
+    C -->|Sin claim scopes| Y[403 FORBIDDEN]
+    C -->|Scope user ausente| Z[401 UNAUTHORIZED con espacio final]
+    C -->|Scope user presente| D[GetAllUsersUseCase]
     D --> E[UserPrismaRepository.findAll]
     E --> F[(PostgreSQL: users)]
     F --> G[Mapear campos públicos]

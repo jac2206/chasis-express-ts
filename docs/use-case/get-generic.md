@@ -65,8 +65,11 @@ Los middlewares pueden devolver `401` por token faltante/inválido, `403` por au
 ```mermaid
 flowchart TD
     A[Cliente HTTP] --> B[authenticateJWT]
-    B --> C[authorizeScopes: generic]
-    C --> D[GenericController.getGeneric]
+    B -->|Token faltante o inválido| X[401 UNAUTHORIZED / INVALID_TOKEN]
+    B -->|Token válido| C[authorizeScopes: generic]
+    C -->|Sin claim scopes| Y[403 FORBIDDEN]
+    C -->|Scope generic ausente| Z[401 UNAUTHORIZED con espacio final]
+    C -->|Scope generic presente| D[GenericController.getGeneric]
     D --> E[GetGenericUseCase]
     E --> F[Crear Generic en memoria]
     F --> G[Respuesta 200]
