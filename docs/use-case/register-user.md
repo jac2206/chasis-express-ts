@@ -35,7 +35,7 @@ Registra un usuario nuevo, protege su contraseña con bcrypt y lo guarda mediant
 
 | Campo | Tipo | Requerido | Validación |
 | --- | --- | --- | --- |
-| `documentType` | string | Sí | Mínimo 2 caracteres en Zod; la entidad admite `CC`, `CE`, `NIT`, `PT`. |
+| `documentType` | string | Sí | Mínimo 2 caracteres en Zod. El tipo TypeScript de la entidad enumera `CC`, `CE`, `NIT`, `PT`, pero el schema de entrada no restringe esos valores en runtime. |
 | `documentNumber` | string | Sí | Mínimo 5 caracteres. |
 | `fullName` | string | Sí | Mínimo 3 caracteres. |
 | `email` | string | Sí | Formato email. |
@@ -77,10 +77,11 @@ Registra un usuario nuevo, protege su contraseña con bcrypt y lo guarda mediant
 ```mermaid
 flowchart TD
     A[Cliente HTTP] --> B[POST /chasis/v1/users/register]
-    B --> C[Validar body con Zod]
-    C --> D{¿Contraseña válida?}
+    B --> C{¿Body válido según Zod?}
+    C -- No --> V[VALIDATION_ERROR 422]
+    C -- Sí --> D{¿Contraseña cumple la regla del caso de uso?}
     D -- No --> E[USER_WEAK_PASSWORD 422]
-    D -- Sí --> F[Buscar email en Prisma]
+    D -- Sí --> F[UserPrismaRepository.findByEmail]
     F --> G{¿Email existente?}
     G -- Sí --> H[USER_EMAIL_ALREADY_EXISTS 409]
     G -- No --> I[Hash bcrypt y crear User]

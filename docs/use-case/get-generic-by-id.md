@@ -48,7 +48,7 @@ No hay validación de headers, query ni body.
 { "name": "Julian", "lastName": "Arango", "age": 30 }
 ```
 
-Si no existe la fila, el controlador también responde `200` y puede enviar campos indefinidos; no se implementa `404`.
+Si no existe la fila, el caso de uso devuelve `null`; el controlador construye campos `undefined` y Express los omite al serializar JSON. El resultado es `{}` con estado `200`; no se implementa `404`.
 
 ## Reglas específicas y excepciones
 
@@ -69,6 +69,9 @@ flowchart TD
     C --> D[GetXIdGenericUseCase]
     D --> E[GenericRepository.findById]
     E --> F[(PostgreSQL: generics)]
-    F --> G[Mapear fila a Generic]
-    G --> H[Respuesta 200]
+    F --> G{¿Fila encontrada?}
+    G -- Sí --> H[Mapear fila a Generic]
+    G -- No --> I[Resultado null]
+    H --> J[Respuesta 200: generic]
+    I --> J
 ```

@@ -78,10 +78,12 @@ Valida parcialmente y devuelve los datos de un objeto genérico. No persiste el 
 
 ```mermaid
 flowchart TD
-    A[Cliente HTTP] --> B[POST /chasis/v1/generic]
-    B --> C[GenericController.postGeneric]
-    C --> D{¿name válido?}
-    D -- No --> E[GENERIC_INVALID_NAME 422]
-    D -- Sí --> F[Construir respuesta en memoria]
-    F --> G[Respuesta 200]
+    A[Cliente HTTP] --> B[express.json]
+    B -->|JSON mal formado| X[INVALID_JSON 400]
+    B -->|Body procesado| C[POST /chasis/v1/generic]
+    C --> D[GenericController.postGeneric]
+    D --> E{¿name válido?}
+    E -- No --> F[GENERIC_INVALID_NAME 422]
+    E -- Sí --> G[Construir respuesta en memoria]
+    G --> H[Respuesta 200]
 ```

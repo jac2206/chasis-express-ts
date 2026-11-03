@@ -74,10 +74,13 @@ Los valores de expiración dependen de `JWT_ACCESS_EXPIRES_IN` y `JWT_REFRESH_EX
 ```mermaid
 flowchart TD
     A[Cliente HTTP] --> B[POST /chasis/v1/auth/login]
-    B --> C[Validar body con Zod]
-    C --> D[Buscar usuario por email]
-    D --> E{¿Credenciales válidas?}
+    B --> C{¿Body válido según Zod?}
+    C -- No --> V[VALIDATION_ERROR 422]
+    C -- Sí --> D[UserPrismaRepository.findByEmail]
+    D --> E{¿Usuario encontrado?}
     E -- No --> F[USER_INVALID_CREDENTIALS 401]
-    E -- Sí --> G[Generar access token y refresh token]
-    G --> H[Respuesta 200]
+    E -- Sí --> G{¿Contraseña coincide con bcrypt?}
+    G -- No --> F
+    G -- Sí --> H[Generar access token y refresh token]
+    H --> I[Respuesta 200]
 ```

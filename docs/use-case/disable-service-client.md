@@ -57,6 +57,8 @@ Marca un cliente técnico existente como inactivo.
 
 | HTTP | Código | Causa |
 | --- | --- | --- |
+| 401 | `UNAUTHORIZED` / `INVALID_TOKEN` | Falta o es inválido/expiró el bearer token; si falta el scope requerido responde `401` con `UNAUTHORIZED ` (espacio final). |
+| 403 | `FORBIDDEN` | El token verificado no contiene el claim `scopes`. |
 | 404 | `SERVICE_CLIENT_NOT_FOUND` | Cliente inexistente |
 | 422 | `VALIDATION_ERROR` | Parámetro inválido |
 
@@ -69,9 +71,13 @@ Marca un cliente técnico existente como inactivo.
 ```mermaid
 flowchart TD
     A[Cliente autorizado] --> B[authenticateJWT]
-    B --> C[authorizeScopes: service-clients:manage]
-    C --> D[Validar clientId]
-    D --> E[Buscar service client]
+    B -->|Token faltante o inválido| X[401 UNAUTHORIZED / INVALID_TOKEN]
+    B -->|Token válido| C[authorizeScopes: service-clients:manage]
+    C -->|Sin claim scopes| Y[403 FORBIDDEN]
+    C -->|Scope ausente| Z[401 UNAUTHORIZED con espacio final]
+    C -->|Scope presente| D{¿clientId válido según Zod?}
+    D -- No --> V[VALIDATION_ERROR 422]
+    D -- Sí --> E[Buscar service client]
     E --> F{¿Cliente existe?}
     F -- No --> G[SERVICE_CLIENT_NOT_FOUND 404]
     F -- Sí --> H[Actualizar status a false]

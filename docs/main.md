@@ -6,7 +6,7 @@ Este documento describe el comportamiento evidenciado por la implementación act
 
 ## Ejecución y puntos de entrada
 
-- `src/main.ts` conecta Prisma con PostgreSQL antes de escuchar en `PORT` (por defecto `3000`). Desconecta Prisma durante `SIGINT` y `SIGTERM`, y finaliza con código `1` si falla la conexión inicial a la base de datos.
+- `src/main.ts` conecta Prisma con PostgreSQL antes de escuchar en `PORT` (por defecto `3000`). Por eso, aunque el controlador de health no consulta la base de datos, la aplicación no empieza a aceptar solicitudes si falla la conexión inicial. Desconecta Prisma durante `SIGINT` y `SIGTERM` y finaliza con código `1` si falla esa conexión.
 - `src/server.ts` crea la aplicación Express, habilita el análisis de JSON, la resolución de Awilix por solicitud, Swagger UI en `/docs` y los routers `/chasis/health` y `/chasis/v1`.
 - Las rutas desconocidas devuelven `{ "message": "Route not found", "code": 404 }`.
 
@@ -18,12 +18,21 @@ El flujo de dependencias implementado es rutas/controladores HTTP → casos de u
 
 ```mermaid
 flowchart LR
-  HTTP[Rutas y middlewares Express] --> C[Controladores]
+  CLIENTE[Cliente HTTP] --> APP[Express: JSON, routers y DI]
+  APP --> ROUTER[Rutas y middlewares]
+  ROUTER --> C[Controladores]
   C --> U[Casos de uso]
   U --> P[Puertos, entidades y errores de dominio]
-  P --> DB[Repositorios Prisma/PostgreSQL]
-  P --> EXT[Adaptador de PokéAPI]
-  U --> JWT[Servicio JWT]
+  U --> PRISMA[UserPrismaRepository / ServiceClientPrismaRepository]
+  PRISMA --> PG[(PostgreSQL)]
+  U --> RAW[GenericRepository: pg Pool]
+  RAW --> PG
+  U --> EXT[Adaptador PokeApiAdapter + HttpClient]
+  EXT --> POKEAPI[PokeAPI externa]
+  ROUTER -->|solo rutas protegidas| AUTH[Middleware JWT y scopes]
+  AUTH --> JWT[JwtAuthService]
+  U --> JWT
+  APP --> DOCS[Swagger UI / OpenAPI]
 ```
 
 Las etiquetas arquitectónicas de las guías del repositorio describen DDD/arquitectura hexagonal/Clean Architecture; el diagrama registra las relaciones confirmadas por imports y llamadas.
@@ -91,5 +100,6 @@ Las pruebas usan Vitest y cubren controladores, casos de uso, middlewares, repos
 
 - El controlador de health devuelve una respuesta literal y no utiliza el `HealthService` inyectado; el servicio está registrado, pero no forma parte del comportamiento HTTP.
 - `GET /chasis/v1/users` está documentado con un schema de respuesta objeto, mientras que el controlador devuelve un arreglo de usuarios; aquí prevalece la implementación.
+- `GET /chasis/v1/users/me` devuelve `phone` desde una entidad que permite `null`, aunque el schema OpenAPI declara ese campo como string.
 - Los flujos de creación y actualización de generic solo validan el nombre en la capa de aplicación y no persisten cambios. La consulta por ID puede devolver `200` con campos derivados de `null` cuando no existe un registro.
 - Los mapeos de errores y schemas de endpoints no son completamente consistentes entre las rutas legacy de generic y los errores externos.

@@ -1,5 +1,11 @@
 # Use Case: [Use Case Name]
 
+> Optional starter template. Use only when the project or user selects it; a
+> project-local template takes precedence. All sections, values, errors, and the
+> sample diagram below are illustrative placeholders, not facts about a backend.
+> Remove anything that does not apply and include only implementation-backed
+> behavior.
+
 > **Endpoint:** [METHOD] /[base-route]/[resource]
 > **Version:** [api-version]
 
@@ -109,8 +115,7 @@ This use case allows [brief description of the functionality]. [Explain the gene
   "id": "string",
   "property1": "value",
   "property2": 123,
-  "createdAt": "2025-07-15T10:30:00Z",
-  "status": "STATUS"
+  "[field confirmed by implementation]": "[observed value]"
 }
 ```
 
@@ -118,12 +123,7 @@ This use case allows [brief description of the functionality]. [Explain the gene
 
 | HTTP Code | Error Code | Code | Message | Cause |
 | --- | --- | --- | --- | --- |
-| 400 | [ERROR_NAME] | [CODE] | [Error message] | [Explanation of the cause] |
-| 401 | UNAUTHORIZED | 1001 | Unauthorized | Invalid or expired token |
-| 403 | FORBIDDEN | 1002 | Access forbidden | Insufficient permissions |
-| 404 | [RESOURCE]_NOT_FOUND | [CODE] | Resource not found | The requested resource does not exist |
-| 409 | [RESOURCE]_CONFLICT | [CODE] | Conflict with existing resource | A resource with the provided data already exists |
-| 500 | INTERNAL_SERVER_ERROR | - | Internal server error | Unhandled error on the server |
+| [Observed status] | [Observed error identifier] | [Observed code] | [Observed message] | [Cause established by evidence] |
 
 ## Specific Business Rules
 
@@ -144,6 +144,10 @@ This use case allows [brief description of the functionality]. [Explain the gene
 - **[...]**
 
 ## Flow Diagram
+
+The diagram below is fictional and demonstrates formatting only. Replace it with
+the analyzed implementation flow, preserve the project's Mermaid conventions,
+and remove nodes and edges that are not supported by evidence.
 
 ```mermaid
 %%{init: { "flowchart": { "defaultRenderer": "elk" } }}%%
@@ -379,10 +383,9 @@ curl -X [METHOD] [FULL_URL] \
 
 ```json
 {
-  "id": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
+  "id": "[identifier confirmed by implementation]",
   "property1": "value1",
-  "createdAt": "2025-07-15T10:30:00Z",
-  "status": "ACTIVE"
+  "[field confirmed by implementation]": "[observed value]"
 }
 ```
 
